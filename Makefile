@@ -6,4 +6,4 @@ client:
 
 table:
 	python -m backend.app.models.user
-	cd backend && python -m backend.app.database.create_table
+	python backend/app/database/create_table.py
