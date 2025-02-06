@@ -72,10 +72,14 @@ project-root/
 - SQLite (built-in with Python)
 - Make cli (run command)
 - Docker (for deployment)
+- .venv **(Note it should locate inside backend folder so it can work)**
 
 ### 1️⃣ Backend Setup (FastAPI & SQLite)
 
 ```bash
+cd backend
+pip install requirements.txt
+cd ..
 make table
 make server
 ```
@@ -83,6 +87,9 @@ make server
 ### 2️⃣ Frontend Setup (Next.js)
 
 ```bash
+cd frontend
+pnpm i
+cd ..
 make client
 ```
 
