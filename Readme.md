@@ -140,7 +140,7 @@ docker-compose up --build
 
 ## 🤝 Contributing
 
-Make by Me and build by Me
+Make by Song
 
 ---
 
