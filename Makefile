@@ -5,5 +5,6 @@ client:
 	cd frontend && pnpm run dev
 
 table:
-	python -m backend.app.models.user
-	python backend/app/database/create_table.py
+	cd backend && python -m app.database.create_table
+# python -m backend.app.models.user
+# python backend/app/database/create_table.py
