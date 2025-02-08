@@ -1,6 +1,8 @@
 import './globals.css';
 
 import { Analytics } from '@vercel/analytics/react';
+import ToasterProvider from 'providers/ToasterProvider';
+import Footer from '@/components/footer/page';
 
 export const metadata = {
   title: 'Next.js App Router + NextAuth + Tailwind CSS',
@@ -15,8 +17,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="flex min-h-screen w-full flex-col">{children}</body>
-      <Analytics />
+      <body className="min-h-screen bg-background font-sans antialiased">
+        <div className="relative flex min-h-screen flex-col">
+          <ToasterProvider />
+          <div className="flex-1">{children}</div>
+          {/* <Footer /> */}
+        </div>
+        <Analytics />
+      </body>
     </html>
   );
 }

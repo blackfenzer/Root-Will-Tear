@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { signOut } from '@/lib/signout'; // Assuming you have a `signOut` function
 import Image from 'next/image';
 import {
   DropdownMenu,
@@ -15,6 +14,8 @@ import {
 import Link from 'next/link';
 import axios from 'axios';
 import Cookies from 'js-cookie'; // Import js-cookie to handle cookies
+import toast from 'react-hot-toast';
+import { useRouter } from "next/navigation";
 
 interface User {
   username: string;
@@ -23,27 +24,31 @@ interface User {
 
 export function User() {
   const [user, setUser] = useState<User | null>(null); // State to store the user info
+  const router = useRouter();
 
   // Fetch the session asynchronously on component mount if the user is logged in
   useEffect(() => {
     const handleGetMe = async () => {
+      const sessionToken = Cookies.get('session_token'); // Adjust the cookie name based on your app
+
+      // Skip the API call if no session token exists
+      if (!sessionToken) {
+        console.log("No session token, skipping user fetch.");
+        return;
+      }
+
       try {
-        // Check if the access token or session cookie exists
-        const accessToken = Cookies.get('session_token'); // Adjust the cookie name based on your app
+        // Make a GET request to fetch the user information (adjust API endpoint accordingly)
+        const response = await axios.get('http://localhost:8000/api/v1/me', {
+          withCredentials: true, // Ensure cookies are included
+        });
 
-        if (accessToken) {
-          // Make a GET request to fetch the user information (adjust API endpoint accordingly)
-          const response = await axios.get('http://localhost:8000/api/v1/me', {
-            withCredentials: true, // Ensure cookies are included
+        // If the response contains user data, set the user state
+        if (response?.data) {
+          setUser({
+            username: response.data.username, // Assuming the response has `username` and `role`
+            role: response.data.role,
           });
-
-          // If the response contains user data, set the user state
-          if (response?.data) {
-            setUser({
-              username: response.data.username, // Assuming the response has `username` and `role`
-              role: response.data.role,
-            });
-          }
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -70,9 +75,12 @@ export function User() {
         setUser(null); // Reset user state
         Cookies.remove('access_token'); // Optional: Remove access token cookie
         Cookies.remove('csrf_token'); // Optional: Remove CSRF token cookie
+        toast.success('Signed out successfully');
+        router.push('/'); // Redirect to the homepage or another page
       }
     } catch (error) {
-      console.error('Error signing out:', error);
+      toast.error('Failed to sign out');
+      // console.error('Error signing out:', error);
     }
   };
 

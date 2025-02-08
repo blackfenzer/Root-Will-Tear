@@ -12,6 +12,8 @@ import {
   SelectContent,
   SelectItem
 } from '@/components/ui/select';
+import { toast } from 'react-hot-toast';
+import Footer from '@/components/footer/page';
 
 export default function ModelManagement() {
   const [models, setModels] = useState([
@@ -64,6 +66,7 @@ export default function ModelManagement() {
       patientDetails: null
     });
     setIsCreating(false);
+    toast.success('Model created successfully!');
   };
 
   const handleEdit = (id) => {
@@ -78,10 +81,12 @@ export default function ModelManagement() {
       trainingData: '',
       patientDetails: null
     });
+    toast.success('Model updated successfully!');
   };
 
   const handleDelete = (id) => {
     setModels(models.filter((model) => model.id !== id));
+    toast.success('Model deleted successfully!');
   };
 
   const handleFileUpload = (event, modelId) => {
@@ -94,6 +99,7 @@ export default function ModelManagement() {
           model.id === modelId ? { ...model, patientDetails: csvData } : model
         );
         setModels(updatedModels);
+        toast.success('CSV uploaded successfully!');
       };
       reader.readAsText(file);
     }
@@ -110,6 +116,7 @@ export default function ModelManagement() {
   };
 
   return (
+    <div className="flex flex-col min-h-screen">
     <div className="p-8">
       <div className="flex gap-4 mb-8">
         <Select>
@@ -260,6 +267,9 @@ export default function ModelManagement() {
           </div>
         )}
       </div>
+      
+    </div>
+    <Footer />
     </div>
   );
 }

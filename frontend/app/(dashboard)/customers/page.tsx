@@ -5,9 +5,11 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
+import Footer from '@/components/footer/page';
 
 export default function CustomersPage() {
   return (
+    <div>
     <Card>
       <CardHeader>
         <CardTitle>Customers</CardTitle>
@@ -15,5 +17,7 @@ export default function CustomersPage() {
       </CardHeader>
       <CardContent></CardContent>
     </Card>
+    <Footer />
+    </div>
   );
 }
