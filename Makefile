@@ -33,7 +33,7 @@ p:
 
 am:
 	torch-model-archiver --model-name regression_model \
-		--version 2.0 \
+		--version 1.0 \
 		--model-file backend/app/handlers/regression_net.py \
 		--serialized-file backend/model_artifacts/regression_model.pth \
 		--handler backend/app/handlers/model_handler.py \
