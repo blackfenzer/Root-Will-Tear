@@ -39,3 +39,9 @@ am:
 		--handler backend/app/handlers/model_handler.py \
 		--extra-files "backend/app/handlers/regression_net.py" \
 		--export-path backend/model_store
+
+b:
+	cd backend/bentoml && bentoml serve service:svc  --port 5000
+
+b2:
+	cd backend/bentoml && bentoml serve service:RegressionService --port 5000
