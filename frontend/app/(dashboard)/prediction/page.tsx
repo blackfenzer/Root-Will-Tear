@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -22,40 +22,83 @@ import {
 } from '@/components/ui/select';
 import Footer from '@/components/footer/page';
 import { toast } from 'react-hot-toast';
+import axios from 'axios';
+
+const apiClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL
+});
 
 export default function PredictionPage() {
   const [formData, setFormData] = useState({
-    hn: '',
-    sex: '',
-    age: '',
-    ud: '',
-    bw: '',
-    ht: '',
-    bmi: '',
-    ikdc: '',
-    lysholm: '',
-    klGrade: '',
-    mmExtrusion: ''
+    sex: 0,
+    age: 0,
+    side: 0,
+    BW: 0,
+    Ht: 0,
+    BMI: 0,
+    'IKDC pre': 0,
+    'Lysholm pre': 0,
+    'Pre KL grade': 0,
+    'MM extrusion pre': 0
   });
-  const [model, setModel] = useState('');
+  const [models, setModels] = useState([]);
+  const [selectedModel, setSelectedModel] = useState('');
   const [predictions, setPredictions] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState('');
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const response = await apiClient.get('/api/v1/model/models/');
+        setModels(response.data);
+      } catch (error) {
+        console.error('Error fetching models:', error);
+        toast.error('Failed to load models');
+      }
+    };
+    fetchModels();
+  }, []);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: Number(value) // Convert input values to numbers
+    }));
   };
 
   const handlePredict = async () => {
-    // Mock API call
-    const mockData = [
-      { time: '3 months', IKDC: 50, Lysholm: 45 },
-      { time: '6 months', IKDC: 55, Lysholm: 50 },
-      { time: '1 year', IKDC: 60, Lysholm: 55 },
-      { time: '2 years', IKDC: 65, Lysholm: 60 },
-      { time: '3 years', IKDC: 68, Lysholm: 62 },
-      { time: '4 years', IKDC: 70, Lysholm: 65 }
-    ];
-    setPredictions(mockData);
-    toast.success('Prediction successful');
+    if (!selectedModel) {
+      toast.error('Please select a model');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await apiClient.post(`/nn/${selectedModel}`, {
+        model_tag: selectedModel,
+        input_data: formData
+      });
+
+      // Transform response data for chart
+      // const chartData = Object.entries(response.data.predictions).map(
+      //   ([time, values]) => ({
+      //     time,
+      //     ...values
+      //   })
+      // );
+      console.log('example ', response);
+      setResult(response.data.prediction);
+
+      // setPredictions(chartData);
+      toast.success('Prediction successful');
+    } catch (error) {
+      console.error('Prediction error:', error);
+      toast.error(error.response?.data?.detail || 'Prediction failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -67,10 +110,10 @@ export default function PredictionPage() {
             <div>
               <h3 className="font-semibold mb-2">Patient Information</h3>
               <div className="space-y-3">
-                {['hn', 'sex', 'age', 'ud', 'bw', 'ht', 'bmi'].map((key) => (
+                {['sex', 'age', 'side', 'BW', 'Ht', 'BMI'].map((key) => (
                   <Input
                     key={key}
-                    type="text"
+                    type="number"
                     name={key}
                     placeholder={key.toUpperCase()}
                     value={formData[key]}
@@ -83,10 +126,15 @@ export default function PredictionPage() {
             <div>
               <h3 className="font-semibold mb-2">Pre Score</h3>
               <div className="space-y-3">
-                {['ikdc', 'lysholm', 'klGrade', 'mmExtrusion'].map((key) => (
+                {[
+                  'IKDC pre',
+                  'Lysholm pre',
+                  'Pre KL grade',
+                  'MM extrusion pre'
+                ].map((key) => (
                   <Input
                     key={key}
-                    type="text"
+                    type="number"
                     name={key}
                     placeholder={key.toUpperCase()}
                     value={formData[key]}
@@ -99,20 +147,24 @@ export default function PredictionPage() {
           </div>
           <Button
             onClick={handlePredict}
+            disabled={isLoading}
             className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1] mt-4 w-full"
           >
-            Confirm
+            {isLoading ? 'Predicting...' : 'Confirm'}
           </Button>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-bold">Prediction</h2>
-          <Select onValueChange={setModel}>
+          <Select onValueChange={setSelectedModel} value={selectedModel}>
             <SelectTrigger className="w-full mt-2">
               <SelectValue placeholder="Select Model" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="model1">Model 1</SelectItem>
-              <SelectItem value="model2">Model 2</SelectItem>
+              {models.map((model) => (
+                <SelectItem key={model.id} value={model.name}>
+                  {model.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           {predictions && (
@@ -123,13 +175,24 @@ export default function PredictionPage() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="IKDC" stroke="blue" />
-                <Line type="monotone" dataKey="Lysholm" stroke="purple" />
+                <Line
+                  type="monotone"
+                  dataKey="IKDC"
+                  stroke="#8884d8"
+                  strokeWidth={2}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Lysholm"
+                  stroke="#82ca9d"
+                  strokeWidth={2}
+                />
               </LineChart>
             </ResponsiveContainer>
           )}
         </div>
       </div>
+      <h1>this is prediction result {result}</h1>
       <Footer />
     </div>
   );

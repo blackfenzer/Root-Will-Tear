@@ -15,7 +15,7 @@ import Link from 'next/link';
 import axios from 'axios';
 import Cookies from 'js-cookie'; // Import js-cookie to handle cookies
 import toast from 'react-hot-toast';
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 
 interface User {
   username: string;
@@ -33,22 +33,23 @@ export function User() {
 
       // Skip the API call if no session token exists
       if (!sessionToken) {
-        console.log("No session token, skipping user fetch.");
+        console.log('No session token, skipping user fetch.');
         return;
       }
 
       try {
         // Make a GET request to fetch the user information (adjust API endpoint accordingly)
         const response = await axios.get('http://localhost:8000/api/v1/me', {
-          withCredentials: true, // Ensure cookies are included
+          withCredentials: true // Ensure cookies are included
         });
 
         // If the response contains user data, set the user state
         if (response?.data) {
           setUser({
             username: response.data.username, // Assuming the response has `username` and `role`
-            role: response.data.role,
+            role: response.data.role
           });
+          console.log(response.data.role);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -66,7 +67,7 @@ export function User() {
         'http://localhost:8000/api/v1/logout',
         {},
         {
-          withCredentials: true, // Ensure cookies are sent with the request
+          withCredentials: true // Ensure cookies are sent with the request
         }
       );
 
