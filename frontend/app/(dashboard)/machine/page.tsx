@@ -214,7 +214,8 @@ export default function ModelManagement() {
           <Button
             className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1]"
             onClick={() => {
-              setEditModelName(null);
+              setEditModelName(null); // Clear edit mode
+              setIsCreating(true); // Enter create mode
               setNewModel({
                 name: '',
                 model_architecture: '',
@@ -223,7 +224,6 @@ export default function ModelManagement() {
                 bentoml_tag: '',
                 is_active: true
               });
-              setIsCreating(true);
             }}
           >
             Create New Model
@@ -256,7 +256,8 @@ export default function ModelManagement() {
                           size="sm"
                           variant="outline"
                           onClick={() => {
-                            setEditModelName(model.name);
+                            setIsCreating(false); // Exit create mode
+                            setEditModelName(model.name); // Enter edit mode
                             setNewModel({
                               name: model.name,
                               model_architecture: model.model_architecture,
@@ -269,6 +270,7 @@ export default function ModelManagement() {
                         >
                           Edit
                         </Button>
+
                         <Button
                           size="sm"
                           variant="destructive"
