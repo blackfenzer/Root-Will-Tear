@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,7 +53,7 @@ export default function ModelManagement() {
     is_active: true
   });
 
-  // Additional state for CSV training parameters
+  // Additional state for CSV training parameters (used only on create)
   const [trainingDescription, setTrainingDescription] = useState('');
   const [trainingVersion, setTrainingVersion] = useState('');
 
@@ -87,21 +87,29 @@ export default function ModelManagement() {
       model.bentoml_tag.toLowerCase().includes(filter.toLowerCase())
   );
 
-  // Create new model metadata locally (or call a backend create endpoint if available)
+  // Create new model via training endpoint
   const handleCreate = async () => {
+    if (!file) {
+      toast.error('Please select a CSV file to upload');
+      return;
+    }
     try {
-      const createdModel: AllModelResponse = {
-        id: Date.now(),
+      const formData = new FormData();
+      formData.append('file', file);
+      // Build query parameters from form state
+      const queryParams = new URLSearchParams({
         name: newModel.name || '',
-        model_architecture: newModel.model_architecture || '',
-        final_loss: newModel.final_loss || 0,
-        model_path: newModel.model_path || '',
-        bentoml_tag: newModel.bentoml_tag || '',
-        is_active: newModel.is_active !== undefined ? newModel.is_active : true,
-        created_at: new Date().toISOString().split('T')[0],
-        csv_id: undefined
-      };
-      setModels([...models, createdModel]);
+        version: trainingVersion,
+        description: trainingDescription
+      });
+      const response = await apiClient.post<AllModelResponse>(
+        `/smart/model_train?${queryParams.toString()}`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      // Update models state with the returned model data
+      setModels([...models, response.data]);
+      // Reset form state
       setNewModel({
         name: '',
         model_architecture: '',
@@ -110,10 +118,13 @@ export default function ModelManagement() {
         bentoml_tag: '',
         is_active: true
       });
+      setTrainingDescription('');
+      setTrainingVersion('');
+      setFile(null);
       setIsCreating(false);
-      toast.success('Model created successfully!');
+      toast.success('Model trained and CSV uploaded successfully!');
     } catch (error) {
-      toast.error('Failed to create model');
+      toast.error('Failed to train model');
     }
   };
 
@@ -155,37 +166,10 @@ export default function ModelManagement() {
     }
   };
 
-  // Handle CSV file upload for model training
-  // This sends the CSV along with query parameters for name, description, and version
-  const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
-    const uploadedFile = event.target.files?.[0];
-    if (uploadedFile) {
-      setFile(uploadedFile);
-      try {
-        const formData = new FormData();
-        formData.append('file', uploadedFile);
-        // Query parameters for training endpoint
-        const queryParams = new URLSearchParams({
-          name: newModel.name || '',
-          description: trainingDescription,
-          version: trainingVersion
-        });
-        const response = await apiClient.post<AllModelResponse>(
-          `/smart/model_train?${queryParams.toString()}`,
-          formData,
-          { headers: { 'Content-Type': 'multipart/form-data' } }
-        );
-        // Update the model list with the returned data (e.g. csv_id might be updated)
-        setModels(
-          models.map((model) =>
-            model.name === newModel.name ? response.data : model
-          )
-        );
-        toast.success('Model trained and CSV uploaded successfully!');
-      } catch (error) {
-        toast.error('Failed to train model');
-      }
-    }
+  // Handle file input change to set file state
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const uploadedFile = event.target.files?.[0] || null;
+    setFile(uploadedFile);
   };
 
   // Download CSV via the download endpoint
@@ -214,8 +198,7 @@ export default function ModelManagement() {
           <Button
             className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1]"
             onClick={() => {
-              setEditModelName(null); // Clear edit mode
-              setIsCreating(true); // Enter create mode
+              setEditModelName(null);
               setNewModel({
                 name: '',
                 model_architecture: '',
@@ -224,6 +207,10 @@ export default function ModelManagement() {
                 bentoml_tag: '',
                 is_active: true
               });
+              setTrainingDescription('');
+              setTrainingVersion('');
+              setFile(null);
+              setIsCreating(true);
             }}
           >
             Create New Model
@@ -256,8 +243,8 @@ export default function ModelManagement() {
                           size="sm"
                           variant="outline"
                           onClick={() => {
-                            setIsCreating(false); // Exit create mode
-                            setEditModelName(model.name); // Enter edit mode
+                            setIsCreating(false);
+                            setEditModelName(model.name);
                             setNewModel({
                               name: model.name,
                               model_architecture: model.model_architecture,
@@ -270,7 +257,6 @@ export default function ModelManagement() {
                         >
                           Edit
                         </Button>
-
                         <Button
                           size="sm"
                           variant="destructive"
@@ -315,7 +301,7 @@ export default function ModelManagement() {
               <Input
                 type="file"
                 accept=".csv"
-                onChange={handleFileUpload}
+                onChange={handleFileChange}
                 className="mb-4"
               />
               <Label>Training Description</Label>
