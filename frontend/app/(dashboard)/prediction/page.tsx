@@ -23,10 +23,10 @@ import {
 import Footer from '@/components/footer/page';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
-
-const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL
-});
+import apiClient from '@/lib/axios';
+// const apiClient = axios.create({
+//   baseURL: process.env.NEXT_PUBLIC_BACKEND_URL
+// });
 
 export default function PredictionPage() {
   const [formData, setFormData] = useState({
@@ -50,7 +50,7 @@ export default function PredictionPage() {
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const response = await apiClient.get('/api/v1/model/models/');
+        const response = await apiClient.get('/api/v1/model/');
         setModels(response.data);
       } catch (error) {
         console.error('Error fetching models:', error);
@@ -167,7 +167,8 @@ export default function PredictionPage() {
               ))}
             </SelectContent>
           </Select>
-          {predictions && (
+          <h1>this is prediction result {result}</h1>
+          {/* {predictions && (
             <ResponsiveContainer width="100%" height={300} className="mt-4">
               <LineChart data={predictions}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -189,10 +190,10 @@ export default function PredictionPage() {
                 />
               </LineChart>
             </ResponsiveContainer>
-          )}
+          )} */}
         </div>
       </div>
-      <h1>this is prediction result {result}</h1>
+      
       <Footer />
     </div>
   );
