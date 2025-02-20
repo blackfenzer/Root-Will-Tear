@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,262 +14,397 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'react-hot-toast';
 import Footer from '@/components/footer/page';
+import apiClient from '@/lib/axios';
+
+// TypeScript interfaces for model data and update payload
+interface AllModelResponse {
+  id: number;
+  name: string;
+  model_architecture: string;
+  final_loss?: number;
+  model_path: string;
+  bentoml_tag: string;
+  is_active: boolean;
+  created_at: string;
+  csv_id?: number;
+}
+
+interface AllModelUpdate {
+  model_architecture?: string;
+  final_loss?: number;
+  model_path?: string;
+  bentoml_tag?: string;
+  is_active?: boolean;
+  csv_id?: number;
+}
 
 export default function ModelManagement() {
-  const [models, setModels] = useState([
-    {
-      id: 1,
-      name: 'Model A',
-      createDate: '2023-01-15',
-      trainingData: 'Dataset A',
-      patientDetails: 'HN, Sex, Age\n12345678, Male, XX\n'
-    },
-    {
-      id: 2,
-      name: 'Model B',
-      createDate: '2023-02-10',
-      trainingData: 'Dataset B',
-      patientDetails: 'HN, Sex, Age\n87654321, Female, YY\n'
-    }
-  ]);
-
+  // State for fetched models
+  const [models, setModels] = useState<AllModelResponse[]>([]);
   const [filter, setFilter] = useState('');
-  const [newModel, setNewModel] = useState({
+
+  // State for model metadata (for create/edit)
+  const [newModel, setNewModel] = useState<Partial<AllModelResponse>>({
     name: '',
-    createDate: '',
-    trainingData: '',
-    patientDetails: null // Initialize as null
+    model_architecture: '',
+    final_loss: 0,
+    model_path: '',
+    bentoml_tag: '',
+    is_active: true
   });
-  const [editModelId, setEditModelId] = useState(null);
+
+  // Additional state for CSV training parameters
+  const [trainingDescription, setTrainingDescription] = useState('');
+  const [trainingVersion, setTrainingVersion] = useState('');
+
+  // Determines if we are in create mode or editing an existing model.
+  // When editing, we use the model's name as its identifier.
+  const [editModelName, setEditModelName] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
+  // File state for CSV uploads
+  const [file, setFile] = useState<File | null>(null);
+
+  // Fetch models from backend on mount
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const response =
+          await apiClient.get<AllModelResponse[]>('/api/v1/model/');
+        setModels(response.data);
+      } catch (error) {
+        toast.error('Failed to fetch models');
+      }
+    };
+    fetchModels();
+  }, []);
+
+  // Filter models based on name, created_at, or BentoML tag
   const filteredModels = models.filter(
     (model) =>
       model.name.toLowerCase().includes(filter.toLowerCase()) ||
-      model.createDate.includes(filter) ||
-      model.trainingData.toLowerCase().includes(filter.toLowerCase())
+      model.created_at.includes(filter) ||
+      model.bentoml_tag.toLowerCase().includes(filter.toLowerCase())
   );
 
-  const handleCreate = () => {
-    setModels([
-      ...models,
-      {
+  // Create new model metadata locally (or call a backend create endpoint if available)
+  const handleCreate = async () => {
+    try {
+      const createdModel: AllModelResponse = {
         id: Date.now(),
-        ...newModel,
-        createDate: new Date().toISOString().split('T')[0]
-      }
-    ]);
-    setNewModel({
-      name: '',
-      createDate: '',
-      trainingData: '',
-      patientDetails: null
-    });
-    setIsCreating(false);
-    toast.success('Model created successfully!');
-  };
-
-  const handleEdit = (id) => {
-    const updatedModels = models.map((model) =>
-      model.id === id ? { ...model, ...newModel } : model
-    );
-    setModels(updatedModels);
-    setEditModelId(null);
-    setNewModel({
-      name: '',
-      createDate: '',
-      trainingData: '',
-      patientDetails: null
-    });
-    toast.success('Model updated successfully!');
-  };
-
-  const handleDelete = (id) => {
-    setModels(models.filter((model) => model.id !== id));
-    toast.success('Model deleted successfully!');
-  };
-
-  const handleFileUpload = (event, modelId) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const csvData = reader.result;
-        const updatedModels = models.map((model) =>
-          model.id === modelId ? { ...model, patientDetails: csvData } : model
-        );
-        setModels(updatedModels);
-        toast.success('CSV uploaded successfully!');
+        name: newModel.name || '',
+        model_architecture: newModel.model_architecture || '',
+        final_loss: newModel.final_loss || 0,
+        model_path: newModel.model_path || '',
+        bentoml_tag: newModel.bentoml_tag || '',
+        is_active: newModel.is_active !== undefined ? newModel.is_active : true,
+        created_at: new Date().toISOString().split('T')[0],
+        csv_id: undefined
       };
-      reader.readAsText(file);
+      setModels([...models, createdModel]);
+      setNewModel({
+        name: '',
+        model_architecture: '',
+        final_loss: 0,
+        model_path: '',
+        bentoml_tag: '',
+        is_active: true
+      });
+      setIsCreating(false);
+      toast.success('Model created successfully!');
+    } catch (error) {
+      toast.error('Failed to create model');
     }
   };
 
-  const handleDownloadCSV = (csvData, fileName) => {
-    const blob = new Blob([csvData], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.click();
-    URL.revokeObjectURL(url);
+  // Update model metadata via PUT endpoint
+  const handleEdit = async (modelName: string) => {
+    try {
+      const response = await apiClient.put<AllModelResponse>(
+        `/api/v1/model/models/${modelName}`,
+        newModel as AllModelUpdate
+      );
+      setModels(
+        models.map((model) =>
+          model.name === modelName ? response.data : model
+        )
+      );
+      setEditModelName(null);
+      setNewModel({
+        name: '',
+        model_architecture: '',
+        final_loss: 0,
+        model_path: '',
+        bentoml_tag: '',
+        is_active: true
+      });
+      toast.success('Model updated successfully!');
+    } catch (error) {
+      toast.error('Failed to update model');
+    }
+  };
+
+  // Delete model via DELETE endpoint
+  const handleDelete = async (modelName: string) => {
+    try {
+      await apiClient.delete(`/api/v1/model/${modelName}`);
+      setModels(models.filter((model) => model.name !== modelName));
+      toast.success('Model deleted successfully!');
+    } catch (error) {
+      toast.error('Failed to delete model');
+    }
+  };
+
+  // Handle CSV file upload for model training
+  // This sends the CSV along with query parameters for name, description, and version
+  const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const uploadedFile = event.target.files?.[0];
+    if (uploadedFile) {
+      setFile(uploadedFile);
+      try {
+        const formData = new FormData();
+        formData.append('file', uploadedFile);
+        // Query parameters for training endpoint
+        const queryParams = new URLSearchParams({
+          name: newModel.name || '',
+          description: trainingDescription,
+          version: trainingVersion
+        });
+        const response = await apiClient.post<AllModelResponse>(
+          `/smart/model_train?${queryParams.toString()}`,
+          formData,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+        // Update the model list with the returned data (e.g. csv_id might be updated)
+        setModels(
+          models.map((model) =>
+            model.name === newModel.name ? response.data : model
+          )
+        );
+        toast.success('Model trained and CSV uploaded successfully!');
+      } catch (error) {
+        toast.error('Failed to train model');
+      }
+    }
+  };
+
+  // Download CSV via the download endpoint
+  const handleDownloadCSV = (csvId: number) => {
+    const downloadUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/smart/download/csv/${csvId}`;
+    window.open(downloadUrl, '_blank');
   };
 
   return (
     <div className="flex flex-col min-h-screen">
-    <div className="p-8">
-      <div className="flex gap-4 mb-8">
-        <Select>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Select Model" />
-          </SelectTrigger>
-          <SelectContent>
-            {models.map((model) => (
-              <SelectItem key={model.id} value={model.id.toString()}>
-                {`${model.name} (${model.createDate})`}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="p-8">
+        <div className="flex gap-4 mb-8">
+          <Select>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Select Model" />
+            </SelectTrigger>
+            <SelectContent>
+              {models.map((model) => (
+                <SelectItem key={model.id} value={model.name}>
+                  {`${model.name} (${model.created_at})`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Button
-          className='bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1]'
-          onClick={() => {
-            setEditModelId(null);
-            setNewModel({
-              name: '',
-              createDate: '',
-              trainingData: '',
-              patientDetails: null
-            });
-            setIsCreating(true);
-          }}
-        >
-          Create New Model
-        </Button>
-      </div>
+          <Button
+            className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1]"
+            onClick={() => {
+              setEditModelName(null);
+              setNewModel({
+                name: '',
+                model_architecture: '',
+                final_loss: 0,
+                model_path: '',
+                bentoml_tag: '',
+                is_active: true
+              });
+              setIsCreating(true);
+            }}
+          >
+            Create New Model
+          </Button>
+        </div>
 
-      <div className="flex gap-8">
-        {/* Left Column */}
-        <div className="w-1/2">
-          <Input
-            placeholder="Filter"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="mb-4"
-          />
-          <div className="space-y-4">
-            {filteredModels.map((model) => (
-              <Card key={model.id}>
-                <CardContent className="flex justify-between items-center p-4">
-                  {/* Details Section */}
-                  <div className="flex-1">
-                    <strong className="block">{model.name}</strong>
-                    <div>{`Created: ${model.createDate}`}</div>
-                    <div>{`Training Data: ${model.trainingData}`}</div>
-                  </div>
-
-                  {/* Button Section */}
-                  <div className="flex flex-col items-center gap-2">
-                    {/* First Row: Edit and Delete */}
-                    <div className="flex gap-2">
-                      <Button
-                        className='bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]'
-                        size="sm"
-                        variant={'outline'}
-                        onClick={() => {
-                          setEditModelId(model.id);
-                          setNewModel({
-                            name: model.name,
-                            createDate: model.createDate,
-                            trainingData: model.trainingData,
-                            patientDetails: model.patientDetails
-                          });
-                          setIsCreating(false);
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDelete(model.id)}
-                      >
-                        Delete
-                      </Button>
+        <div className="flex gap-8">
+          {/* Left Column: List of Models */}
+          <div className="w-1/2">
+            <Input
+              placeholder="Filter"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="mb-4"
+            />
+            <div className="space-y-4">
+              {filteredModels.map((model) => (
+                <Card key={model.id}>
+                  <CardContent className="flex justify-between items-center p-4">
+                    <div className="flex-1">
+                      <strong className="block">{model.name}</strong>
+                      <div>{`Created: ${model.created_at}`}</div>
+                      <div>{`Architecture: ${model.model_architecture}`}</div>
+                      <div>{`BentoML Tag: ${model.bentoml_tag}`}</div>
                     </div>
-
-                    {/* Second Row: Download CSV */}
-                    {model.patientDetails && (
-                      <div>
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="flex gap-2">
                         <Button
-                          className='bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]'
-                          // className='bg-border-[#493DB1]'
+                          className="bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]"
                           size="sm"
-                          variant={'outline'}
+                          variant="outline"
+                          onClick={() => {
+                            setEditModelName(model.name);
+                            setNewModel({
+                              name: model.name,
+                              model_architecture: model.model_architecture,
+                              final_loss: model.final_loss || 0,
+                              model_path: model.model_path,
+                              bentoml_tag: model.bentoml_tag,
+                              is_active: model.is_active
+                            });
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDelete(model.name)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                      {model.csv_id && (
+                        <Button
+                          className="bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]"
+                          size="sm"
+                          variant="outline"
                           onClick={() =>
-                            handleDownloadCSV(
-                              model.patientDetails,
-                              `${model.name}_PatientDetails.csv`
-                            )
+                            handleDownloadCSV(model.csv_id as number)
                           }
                         >
                           Download CSV
                         </Button>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Right Column */}
-        {(isCreating || editModelId !== null) && (
-          <div className="w-5/12">
-            <h2 className="text-xl font-bold mb-4">
-              {editModelId ? 'Edit Model' : 'Create New Model'}
-            </h2>
-            <Label>Name</Label>
-            <Input
-              value={newModel.name}
-              onChange={(e) =>
-                setNewModel({ ...newModel, name: e.target.value })
-              }
-              placeholder="Model Name"
-              className="mb-4"
-            />
-            <Label>Training Data</Label>
-            <Input
-              value={newModel.trainingData}
-              onChange={(e) =>
-                setNewModel({ ...newModel, trainingData: e.target.value })
-              }
-              placeholder="Training Data"
-              className="mb-4"
-            />
-            <Label>Upload Patient Details CSV</Label>
-            <Input
-              type="file"
-              accept=".csv"
-              onChange={(e) => handleFileUpload(e, editModelId || Date.now())}
-              className="mb-4"
-            />
-            <Button
-              className='bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1]'
-              onClick={() => {
-                editModelId ? handleEdit(editModelId) : handleCreate();
-              }}
-            >
-              {editModelId ? 'Update' : 'Add'}
-            </Button>
-          </div>
-        )}
+          {/* Right Column: Create/Edit Form */}
+          {isCreating && (
+            <div className="w-5/12">
+              <h2 className="text-xl font-bold mb-4">Create New Model</h2>
+              <Label>Name</Label>
+              <Input
+                value={newModel.name}
+                onChange={(e) =>
+                  setNewModel({ ...newModel, name: e.target.value })
+                }
+                placeholder="Model Name"
+                className="mb-4"
+              />
+              <Label>Upload CSV for Training</Label>
+              <Input
+                type="file"
+                accept=".csv"
+                onChange={handleFileUpload}
+                className="mb-4"
+              />
+              <Label>Training Description</Label>
+              <Input
+                value={trainingDescription}
+                onChange={(e) => setTrainingDescription(e.target.value)}
+                placeholder="Training Description"
+                className="mb-4"
+              />
+              <Label>Training Version</Label>
+              <Input
+                value={trainingVersion}
+                onChange={(e) => setTrainingVersion(e.target.value)}
+                placeholder="Training Version"
+                className="mb-4"
+              />
+              <Button
+                className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1]"
+                onClick={handleCreate}
+              >
+                Add Model
+              </Button>
+            </div>
+          )}
+
+          {editModelName !== null && (
+            <div className="w-5/12">
+              <h2 className="text-xl font-bold mb-4">Edit Model</h2>
+              <Label>Model Architecture</Label>
+              <Input
+                value={newModel.model_architecture}
+                onChange={(e) =>
+                  setNewModel({
+                    ...newModel,
+                    model_architecture: e.target.value
+                  })
+                }
+                placeholder="Model Architecture"
+                className="mb-4"
+              />
+              <Label>Final Loss</Label>
+              <Input
+                type="number"
+                value={newModel.final_loss?.toString() || '0'}
+                onChange={(e) =>
+                  setNewModel({
+                    ...newModel,
+                    final_loss: Number(e.target.value)
+                  })
+                }
+                placeholder="Final Loss"
+                className="mb-4"
+              />
+              <Label>Model Path</Label>
+              <Input
+                value={newModel.model_path}
+                onChange={(e) =>
+                  setNewModel({ ...newModel, model_path: e.target.value })
+                }
+                placeholder="Model Path"
+                className="mb-4"
+              />
+              <Label>BentoML Tag</Label>
+              <Input
+                value={newModel.bentoml_tag}
+                onChange={(e) =>
+                  setNewModel({ ...newModel, bentoml_tag: e.target.value })
+                }
+                placeholder="BentoML Tag"
+                className="mb-4"
+              />
+              <Label>Is Active</Label>
+              <Input
+                type="checkbox"
+                checked={newModel.is_active || false}
+                onChange={(e) =>
+                  setNewModel({ ...newModel, is_active: e.target.checked })
+                }
+                className="mb-4"
+              />
+              <Button
+                className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1]"
+                onClick={() => handleEdit(editModelName)}
+              >
+                Update Model
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
-      
-    </div>
-    <Footer />
+      <Footer />
     </div>
   );
 }
