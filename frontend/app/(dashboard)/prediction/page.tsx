@@ -30,17 +30,18 @@ import apiClient from '@/lib/axios';
 
 export default function PredictionPage() {
   const [formData, setFormData] = useState({
-    sex: 0,
-    age: 0,
-    side: 0,
-    BW: 0,
-    Ht: 0,
-    BMI: 0,
-    'IKDC pre': 0,
-    'Lysholm pre': 0,
-    'Pre KL grade': 0,
-    'MM extrusion pre': 0
+    'sex': '',
+    'age': '',
+    'side': '',
+    'BW': '',
+    'Ht': '',
+    'BMI': '',
+    'IKDC pre': '',
+    'Lysholm pre': '',
+    'Pre KL grade': '',
+    'MM extrusion pre': ''
   });
+  
   const [models, setModels] = useState([]);
   const [selectedModel, setSelectedModel] = useState('');
   const [predictions, setPredictions] = useState(null);
@@ -110,7 +111,7 @@ export default function PredictionPage() {
             <div>
               <h3 className="font-semibold mb-2">Patient Information</h3>
               <div className="space-y-3">
-                {['sex', 'age', 'side', 'BW', 'Ht', 'BMI'].map((key) => (
+                {(['sex', 'age', 'side', 'BW', 'Ht', 'BMI'] as (keyof typeof formData)[]).map((key) => (
                   <Input
                     key={key}
                     type="number"
@@ -126,12 +127,12 @@ export default function PredictionPage() {
             <div>
               <h3 className="font-semibold mb-2">Pre Score</h3>
               <div className="space-y-3">
-                {[
+                {([
                   'IKDC pre',
                   'Lysholm pre',
                   'Pre KL grade',
                   'MM extrusion pre'
-                ].map((key) => (
+                ] as (keyof typeof formData)[]).map((key) => (
                   <Input
                     key={key}
                     type="number"
