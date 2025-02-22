@@ -23,24 +23,25 @@ import {
 import Footer from '@/components/footer/page';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
-
-const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL
-});
+import apiClient from '@/lib/axios';
+// const apiClient = axios.create({
+//   baseURL: process.env.NEXT_PUBLIC_BACKEND_URL
+// });
 
 export default function PredictionPage() {
   const [formData, setFormData] = useState({
-    sex: 0,
-    age: 0,
-    side: 0,
-    BW: 0,
-    Ht: 0,
-    BMI: 0,
-    'IKDC pre': 0,
-    'Lysholm pre': 0,
-    'Pre KL grade': 0,
-    'MM extrusion pre': 0
+    'sex': '',
+    'age': '',
+    'side': '',
+    'BW': '',
+    'Ht': '',
+    'BMI': '',
+    'IKDC pre': '',
+    'Lysholm pre': '',
+    'Pre KL grade': '',
+    'MM extrusion pre': ''
   });
+  
   const [models, setModels] = useState([]);
   const [selectedModel, setSelectedModel] = useState('');
   const [predictions, setPredictions] = useState(null);
@@ -50,7 +51,7 @@ export default function PredictionPage() {
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const response = await apiClient.get('/api/v1/model/models/');
+        const response = await apiClient.get('/api/v1/model/');
         setModels(response.data);
       } catch (error) {
         console.error('Error fetching models:', error);
@@ -110,7 +111,7 @@ export default function PredictionPage() {
             <div>
               <h3 className="font-semibold mb-2">Patient Information</h3>
               <div className="space-y-3">
-                {['sex', 'age', 'side', 'BW', 'Ht', 'BMI'].map((key) => (
+                {(['sex', 'age', 'side', 'BW', 'Ht', 'BMI'] as (keyof typeof formData)[]).map((key) => (
                   <Input
                     key={key}
                     type="number"
@@ -126,12 +127,12 @@ export default function PredictionPage() {
             <div>
               <h3 className="font-semibold mb-2">Pre Score</h3>
               <div className="space-y-3">
-                {[
+                {([
                   'IKDC pre',
                   'Lysholm pre',
                   'Pre KL grade',
                   'MM extrusion pre'
-                ].map((key) => (
+                ] as (keyof typeof formData)[]).map((key) => (
                   <Input
                     key={key}
                     type="number"
@@ -167,7 +168,8 @@ export default function PredictionPage() {
               ))}
             </SelectContent>
           </Select>
-          {predictions && (
+          <h1>this is prediction result {result}</h1>
+          {/* {predictions && (
             <ResponsiveContainer width="100%" height={300} className="mt-4">
               <LineChart data={predictions}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -189,10 +191,10 @@ export default function PredictionPage() {
                 />
               </LineChart>
             </ResponsiveContainer>
-          )}
+          )} */}
         </div>
       </div>
-      <h1>this is prediction result {result}</h1>
+      
       <Footer />
     </div>
   );

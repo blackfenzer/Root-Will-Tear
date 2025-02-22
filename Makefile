@@ -1,5 +1,5 @@
 server:
-	cd backend && uvicorn main:app --reload --port 8001
+	cd backend && uvicorn main:app --reload --port 8000
 
 client:
 	cd frontend && pnpm run dev
