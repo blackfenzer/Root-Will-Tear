@@ -45,3 +45,9 @@ b1:
 
 b2:
 	cd backend/bentoml && bentoml serve service2:DynamicRegressionService --port 5000
+
+
+# When creating a new migration **change message**
+alembic:
+	cd backend && alembic revision --autogenerate -m "Initial migration"
+	cd backend && alembic upgrade head
