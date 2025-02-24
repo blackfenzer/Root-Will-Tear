@@ -22,8 +22,9 @@ import {
 } from '@/components/ui/select';
 import Footer from '@/components/footer/page';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
+import { ChangeEvent } from "react";
 import apiClient from '@/lib/axios';
+import { Model } from 'types/model';
 // const apiClient = axios.create({
 //   baseURL: process.env.NEXT_PUBLIC_BACKEND_URL
 // });
@@ -42,7 +43,7 @@ export default function PredictionPage() {
     'MM extrusion pre': ''
   });
   
-  const [models, setModels] = useState([]);
+  const [models, setModels] = useState<Model[]>([]);
   const [selectedModel, setSelectedModel] = useState('');
   const [predictions, setPredictions] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,11 +62,11 @@ export default function PredictionPage() {
     fetchModels();
   }, []);
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: Number(value) // Convert input values to numbers
+      [name]: Number(value), // Convert input values to numbers
     }));
   };
 
@@ -96,7 +97,7 @@ export default function PredictionPage() {
       toast.success('Prediction successful');
     } catch (error) {
       console.error('Prediction error:', error);
-      toast.error(error.response?.data?.detail || 'Prediction failed');
+      toast.error('Prediction failed');
     } finally {
       setIsLoading(false);
     }

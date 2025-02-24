@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import {FormEvent, ChangeEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
@@ -18,11 +18,11 @@ export default function RegisterPage() {
     password: ''
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(''); // Clear previous errors
 
@@ -51,11 +51,12 @@ export default function RegisterPage() {
       }
     } catch (error) {
       // Handle specific errors based on response or default to a generic message
-      if (error.response && error.response.data) {
-        setError(error.response.data.message || 'Error creating account');
-      } else {
-        setError('Error creating account');
-      }
+      // if (error.response && error.response.data) {
+      //   setError(error.response.data.message || 'Error creating account');
+      // } else {
+      //   setError('Error creating account');
+      // }
+      setError('Error creating account');
 
       // Optionally display error toast
       toast.error('Error creating account');

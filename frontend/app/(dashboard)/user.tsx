@@ -94,7 +94,7 @@ export function User() {
           className="overflow-hidden rounded-full"
         >
           <Image
-            src={user?.image ?? '/placeholder-user.jpg'}
+            src={'/placeholder-user.jpg'}
             width={36}
             height={36}
             alt="Avatar"
