@@ -16,6 +16,10 @@ import { toast } from 'react-hot-toast';
 import Footer from '@/components/footer/page';
 import apiClient from '@/lib/axios';
 
+const Spinner = () => (
+  <div className="animate-spin w-5 h-5 border-t-2 border-blue-500 rounded-full" />
+);
+
 // TypeScript interfaces for model data and update payload
 interface AllModelResponse {
   id: number;
@@ -93,6 +97,7 @@ export default function ModelManagement() {
       toast.error('Please select a CSV file to upload');
       return;
     }
+    setIsCreating(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -125,6 +130,8 @@ export default function ModelManagement() {
       toast.success('Model trained and CSV uploaded successfully!');
     } catch (error) {
       toast.error('Failed to train model');
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -322,7 +329,7 @@ export default function ModelManagement() {
                 className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1]"
                 onClick={handleCreate}
               >
-                Add Model
+                {isCreating ? <Spinner /> : 'Add Model'}
               </Button>
             </div>
           )}
