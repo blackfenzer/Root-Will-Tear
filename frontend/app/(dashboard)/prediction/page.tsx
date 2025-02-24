@@ -22,27 +22,28 @@ import {
 } from '@/components/ui/select';
 import Footer from '@/components/footer/page';
 import { toast } from 'react-hot-toast';
-import { ChangeEvent } from "react";
+import { ChangeEvent } from 'react';
 import apiClient from '@/lib/axios';
 import { Model } from 'types/model';
 // const apiClient = axios.create({
 //   baseURL: process.env.NEXT_PUBLIC_BACKEND_URL
 // });
+import Cookies from 'js-cookie';
 
 export default function PredictionPage() {
   const [formData, setFormData] = useState({
-    'sex': '',
-    'age': '',
-    'side': '',
-    'BW': '',
-    'Ht': '',
-    'BMI': '',
+    sex: '',
+    age: '',
+    side: '',
+    BW: '',
+    Ht: '',
+    BMI: '',
     'IKDC pre': '',
     'Lysholm pre': '',
     'Pre KL grade': '',
     'MM extrusion pre': ''
   });
-  
+
   const [models, setModels] = useState<Model[]>([]);
   const [selectedModel, setSelectedModel] = useState('');
   const [predictions, setPredictions] = useState(null);
@@ -66,7 +67,7 @@ export default function PredictionPage() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: Number(value), // Convert input values to numbers
+      [name]: Number(value) // Convert input values to numbers
     }));
   };
 
@@ -78,9 +79,11 @@ export default function PredictionPage() {
 
     setIsLoading(true);
     try {
+      const sessionToken = Cookies.get('session_token');
       const response = await apiClient.post(`/nn/${selectedModel}`, {
         model_tag: selectedModel,
-        input_data: formData
+        input_data: formData,
+        withCredentials: true
       });
 
       // Transform response data for chart
@@ -112,7 +115,16 @@ export default function PredictionPage() {
             <div>
               <h3 className="font-semibold mb-2">Patient Information</h3>
               <div className="space-y-3">
-                {(['sex', 'age', 'side', 'BW', 'Ht', 'BMI'] as (keyof typeof formData)[]).map((key) => (
+                {(
+                  [
+                    'sex',
+                    'age',
+                    'side',
+                    'BW',
+                    'Ht',
+                    'BMI'
+                  ] as (keyof typeof formData)[]
+                ).map((key) => (
                   <Input
                     key={key}
                     type="number"
@@ -128,12 +140,14 @@ export default function PredictionPage() {
             <div>
               <h3 className="font-semibold mb-2">Pre Score</h3>
               <div className="space-y-3">
-                {([
-                  'IKDC pre',
-                  'Lysholm pre',
-                  'Pre KL grade',
-                  'MM extrusion pre'
-                ] as (keyof typeof formData)[]).map((key) => (
+                {(
+                  [
+                    'IKDC pre',
+                    'Lysholm pre',
+                    'Pre KL grade',
+                    'MM extrusion pre'
+                  ] as (keyof typeof formData)[]
+                ).map((key) => (
                   <Input
                     key={key}
                     type="number"
@@ -195,7 +209,7 @@ export default function PredictionPage() {
           )} */}
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );
