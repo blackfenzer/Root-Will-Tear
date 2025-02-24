@@ -51,6 +51,7 @@ export default function PredictionPage() {
   const [result, setResult] = useState('');
 
   useEffect(() => {
+    const sessionToken = Cookies.get('session_token');
     const fetchModels = async () => {
       try {
         const response = await apiClient.get('/api/v1/model/');
@@ -80,11 +81,16 @@ export default function PredictionPage() {
     setIsLoading(true);
     try {
       const sessionToken = Cookies.get('session_token');
-      const response = await apiClient.post(`/nn/${selectedModel}`, {
-        model_tag: selectedModel,
-        input_data: formData,
-        withCredentials: true
-      });
+      const response = await apiClient.post(
+        `/nn/${selectedModel}`,
+        {
+          model_tag: selectedModel,
+          input_data: formData
+        },
+        {
+          withCredentials: true
+        }
+      );
 
       // Transform response data for chart
       // const chartData = Object.entries(response.data.predictions).map(
