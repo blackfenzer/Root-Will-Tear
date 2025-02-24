@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import apiClient from '@/lib/axios';
-import { Customer, CustomerUpdateData } from 'interfaces/response';
+import { Customer, CustomerUpdateData } from 'types/customer';
 import {
   Card,
   CardContent,
