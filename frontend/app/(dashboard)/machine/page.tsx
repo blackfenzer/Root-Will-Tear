@@ -329,7 +329,7 @@ export default function ModelManagement() {
                 className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1]"
                 onClick={handleCreate}
               >
-                {isCreating ? <Spinner /> : 'Add Model'}
+                Add Model
               </Button>
             </div>
           )}
