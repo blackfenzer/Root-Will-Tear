@@ -44,7 +44,7 @@ b1:
 	cd backend/bentoml && bentoml serve service:RegressionService --port 5000
 
 b2:
-	cd backend/bentoml && bentoml serve service2:DynamicRegressionService --port 5000
+	cd backend/bentoml && bentoml serve service2:DynamicRegressionService --port 5000 --reload
 
 
 # When creating a new migration **change message**

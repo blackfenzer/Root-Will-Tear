@@ -99,8 +99,18 @@ export default function PredictionPage() {
       //     ...values
       //   })
       // );
-      console.log('example ', response);
-      setResult(response.data.prediction);
+      // console.log('example ', response);
+      // console.log(`Type of response: ${typeof response}`);
+      const d = response.data;
+      if (
+        Array.isArray(d) &&
+        d[1] === 200
+      ) {
+        const predictionValue = d[0]?.prediction?.[0]?.[0];
+        setResult(predictionValue);
+      } else {
+        throw new Error('Unexpected response structure');
+      }
 
       // setPredictions(chartData);
       toast.success('Prediction successful');
