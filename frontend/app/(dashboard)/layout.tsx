@@ -80,7 +80,7 @@ function DesktopNav() {
           />
         </Link>
 
-        <NavItem href="/" label="Dashboard">
+        <NavItem href="/" label="Home">
           <Home className="h-5 w-5" />
         </NavItem>
 

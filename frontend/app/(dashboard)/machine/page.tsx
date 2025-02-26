@@ -72,6 +72,7 @@ export default function ModelManagement() {
   // File state for CSV uploads
   const [file, setFile] = useState<File | null>(null);
   const [user, setUser] = useState<User | null>(null); // State to store the user info
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
 
   // Fetch models from backend on mount
   useEffect(() => {
@@ -118,14 +119,19 @@ export default function ModelManagement() {
       }
     };
     fetchModels();
-  }, []);
+  }, [refreshTrigger]);
+
+  const handleModelAdded = () => {
+    setRefreshTrigger((prev) => !prev); // Toggle to trigger re-fetch
+  };
 
   // Filter models based on name, created_at, or BentoML tag
   const filteredModels = models.filter(
     (model) =>
-      model.name.toLowerCase().includes(filter.toLowerCase()) ||
-      model.created_at.includes(filter) ||
-      model.bentoml_tag.toLowerCase().includes(filter.toLowerCase())
+      (model.name && model.name.toLowerCase().includes(filter.toLowerCase())) ||
+      (model.created_at && model.created_at.includes(filter)) ||
+      (model.bentoml_tag &&
+        model.bentoml_tag.toLowerCase().includes(filter.toLowerCase()))
   );
 
   // Create new model via training endpoint
@@ -164,6 +170,7 @@ export default function ModelManagement() {
       setTrainingVersion('');
       setFile(null);
       setIsCreating(false);
+      handleModelAdded();
       toast.success('Model trained and CSV uploaded successfully!');
     } catch (error) {
       toast.error('Failed to train model');
@@ -231,8 +238,8 @@ export default function ModelManagement() {
               <SelectValue placeholder="Select Model" />
             </SelectTrigger>
             <SelectContent>
-              {models.map((model) => (
-                <SelectItem key={model.id} value={model.name}>
+              {models.map((model, index) => (
+                <SelectItem key={index} value={model.name}>
                   {`${model.name} (${model.created_at})`}
                 </SelectItem>
               ))}
@@ -261,7 +268,7 @@ export default function ModelManagement() {
           </Button>
         </div>
 
-        <div className="flex gap-8">
+        <div className="flex flex-wrap gap-8">
           {/* Left Column: List of Models */}
           <div className="w-1/2">
             <Input
@@ -271,59 +278,68 @@ export default function ModelManagement() {
               className="mb-4"
             />
             <div className="space-y-4">
-              {filteredModels.map((model) => (
-                <Card key={model.id}>
-                  <CardContent className="flex justify-between items-center p-4">
+              {filteredModels.map((model, index) => (
+                <Card key={index}>
+                  <CardContent className="p-4">
                     <div className="flex-1">
                       <strong className="block">{model.name}</strong>
                       <div>{`Created: ${model.created_at}`}</div>
                       <div>{`Architecture: ${model.model_architecture}`}</div>
                       <div>{`BentoML Tag: ${model.bentoml_tag}`}</div>
                     </div>
+                    <div className="flex flex-col gap-2 mt-2">
+                      {/* Container for Admin Buttons and Download CSV */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {/* Admin Buttons */}
+                        {user?.role === 'admin' && (
+                          <div className="flex flex-col sm:flex-row gap-2 col-span-1 sm:col-span-2">
+                            {/* Edit Button */}
+                            <Button
+                              className="w-full bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB] transition-all duration-300"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setIsCreating(false);
+                                setEditModelName(model.name);
+                                setNewModel({
+                                  name: model.name,
+                                  model_architecture: model.model_architecture,
+                                  final_loss: model.final_loss || 0,
+                                  model_path: model.model_path,
+                                  bentoml_tag: model.bentoml_tag,
+                                  is_active: model.is_active
+                                });
+                              }}
+                            >
+                              Edit
+                            </Button>
 
-                    <div className="flex flex-col items-center gap-2">
-                      {user?.role === 'admin' && (
-                        <div className="flex gap-2">
+                            {/* Delete Button */}
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDelete(model.name)}
+                              className="w-full transition-all duration-300"
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        )}
+
+                        {/* Download CSV Button */}
+                        {model.csv_id && (
                           <Button
-                            className="bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]"
+                            className="w-full col-span-1 sm:col-span-2 bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB] transition-all duration-300"
                             size="sm"
                             variant="outline"
-                            onClick={() => {
-                              setIsCreating(false);
-                              setEditModelName(model.name);
-                              setNewModel({
-                                name: model.name,
-                                model_architecture: model.model_architecture,
-                                final_loss: model.final_loss || 0,
-                                model_path: model.model_path,
-                                bentoml_tag: model.bentoml_tag,
-                                is_active: model.is_active
-                              });
-                            }}
+                            onClick={() =>
+                              handleDownloadCSV(model.csv_id as number)
+                            }
                           >
-                            Edit
+                            Download CSV
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleDelete(model.name)}
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      )}
-                      {model.csv_id && (
-                        <Button
-                          className="bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]"
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            handleDownloadCSV(model.csv_id as number)
-                          }
-                        >
-                          Download CSV
-                        </Button>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -366,7 +382,13 @@ export default function ModelManagement() {
                 className="mb-4"
               />
               <Button
-                className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1]"
+                className="bg-gray-400 text-white hover:bg-gray-600 mr-2"
+                onClick={() => setIsCreating(false)} // Close the edit form
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1] "
                 onClick={handleCreate}
               >
                 Add Model
@@ -429,6 +451,12 @@ export default function ModelManagement() {
                 }
                 className="mb-4"
               />
+              <Button
+                className="bg-gray-400 text-white hover:bg-gray-600 mr-2"
+                onClick={() => setEditModelName(null)} // Close the edit form
+              >
+                Cancel
+              </Button>
               <Button
                 className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1]"
                 onClick={() => handleEdit(editModelName)}
