@@ -15,6 +15,9 @@ import {
 import { toast } from 'react-hot-toast';
 import Footer from '@/components/footer/page';
 import apiClient from '@/lib/axios';
+import { User } from 'types/user';
+import Cookies from 'js-cookie';
+import axios from 'axios';
 
 const Spinner = () => (
   <div className="animate-spin w-5 h-5 border-t-2 border-blue-500 rounded-full" />
@@ -68,8 +71,42 @@ export default function ModelManagement() {
 
   // File state for CSV uploads
   const [file, setFile] = useState<File | null>(null);
+  const [user, setUser] = useState<User | null>(null); // State to store the user info
 
   // Fetch models from backend on mount
+  useEffect(() => {
+    const handleGetMe = async () => {
+      const sessionToken = Cookies.get('session_token'); // Adjust the cookie name based on your app
+
+      // Skip the API call if no session token exists
+      if (!sessionToken) {
+        console.log('No session token, skipping user fetch.');
+        return;
+      }
+
+      try {
+        // Make a GET request to fetch the user information (adjust API endpoint accordingly)
+        const response = await axios.get('http://localhost:8000/api/v1/me', {
+          withCredentials: true // Ensure cookies are included
+        });
+
+        // If the response contains user data, set the user state
+        if (response?.data) {
+          setUser({
+            username: response.data.username, // Assuming the response has `username` and `role`
+            role: response.data.role
+          });
+          console.log(response.data.role);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    // Call handleGetMe when the component mounts
+    handleGetMe();
+  }, []); // Empty dependency array ensures this runs once on mount
+
   useEffect(() => {
     const fetchModels = async () => {
       try {
@@ -243,35 +280,38 @@ export default function ModelManagement() {
                       <div>{`Architecture: ${model.model_architecture}`}</div>
                       <div>{`BentoML Tag: ${model.bentoml_tag}`}</div>
                     </div>
+
                     <div className="flex flex-col items-center gap-2">
-                      <div className="flex gap-2">
-                        <Button
-                          className="bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setIsCreating(false);
-                            setEditModelName(model.name);
-                            setNewModel({
-                              name: model.name,
-                              model_architecture: model.model_architecture,
-                              final_loss: model.final_loss || 0,
-                              model_path: model.model_path,
-                              bentoml_tag: model.bentoml_tag,
-                              is_active: model.is_active
-                            });
-                          }}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDelete(model.name)}
-                        >
-                          Delete
-                        </Button>
-                      </div>
+                      {user?.role === 'admin' && (
+                        <div className="flex gap-2">
+                          <Button
+                            className="bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setIsCreating(false);
+                              setEditModelName(model.name);
+                              setNewModel({
+                                name: model.name,
+                                model_architecture: model.model_architecture,
+                                final_loss: model.final_loss || 0,
+                                model_path: model.model_path,
+                                bentoml_tag: model.bentoml_tag,
+                                is_active: model.is_active
+                              });
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDelete(model.name)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      )}
                       {model.csv_id && (
                         <Button
                           className="bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]"

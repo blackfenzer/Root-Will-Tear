@@ -75,7 +75,6 @@ export default function RegisterPage() {
               placeholder="Username"
               onChange={handleChange}
             />
-            {/* <Input name="email" type="email" placeholder="Email" onChange={handleChange} /> */}
             <Input
               required
               name="password"
