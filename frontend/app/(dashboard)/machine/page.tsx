@@ -145,7 +145,7 @@ export default function ModelManagement() {
         description: trainingDescription
       });
       const response = await apiClient.post<AllModelResponse>(
-        `/smart/model_train?${queryParams.toString()}`,
+        `/api/v1/model_train?${queryParams.toString()}`,
         formData,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
@@ -218,7 +218,7 @@ export default function ModelManagement() {
 
   // Download CSV via the download endpoint
   const handleDownloadCSV = (csvId: number) => {
-    const downloadUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/smart/download/csv/${csvId}`;
+    const downloadUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/download/csv/${csvId}`;
     window.open(downloadUrl, '_blank');
   };
 
