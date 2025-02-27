@@ -40,6 +40,12 @@ export default function ProtectedRoute({
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
+
+          if (axios.isAxiosError(error) && error.response?.status === 401) {
+            Cookies.remove('session_token');
+            setUser(null);
+            router.push('/login');
+          }
         }
       }
 
@@ -62,10 +68,13 @@ export default function ProtectedRoute({
     // Handle public paths
     if (PUBLIC_PATHS.includes(pathname)) {
       if (sessionToken) {
-        handleNavigation('/'); // If logged in, redirect to home
+        if (pathname === '/login' || pathname === '/register') {
+          handleNavigation('/'); // Redirect logged-in users away from login/register to home
+        }
       }
       return;
     }
+    
 
     // Redirect to login if no session token exists for protected paths
     if (!sessionToken) {
