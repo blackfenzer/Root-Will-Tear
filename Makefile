@@ -45,13 +45,16 @@ alembic:
 	cd backend && alembic revision --autogenerate -m "Initial migration"
 	cd backend && alembic upgrade head
 
+power:
+	cd backend && alembic revision --autogenerate -m "smart migration"
+	cd backend && alembic upgrade head
 # TODO run all to start server and client
 
 migration:
 	cd backend && alembic upgrade head
 
 b2:
-	cd backend/bentoml && bentoml serve service2:DynamicRegressionService --port 5000 --reload
+	cd backend/bentoml && bentoml serve service2:DynamicRegressionService --port 5010 --reload
 
 server:
 	cd backend && uvicorn main:app --reload --port 8000
