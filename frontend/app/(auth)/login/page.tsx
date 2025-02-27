@@ -10,11 +10,13 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import Footer from "@/components/footer/page";
 import { toast } from "react-hot-toast";
+import { useUser } from "context/UserContext";
 
 export default function LoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
   const [formData, setFormData] = useState({ username: "", password: "" });
+  const { fetchUser } = useUser();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,6 +34,7 @@ export default function LoginPage() {
       if (response.status === 200) {
         Cookies.set('session_token', response.data.access_token, { expires: 1 }); // 1 day expiration for example
         Cookies.set('csrf_token', response.data.csrf_token, { expires: 1 });
+        await fetchUser();
         toast.success("Login successful");
         router.push("/");
       } 
