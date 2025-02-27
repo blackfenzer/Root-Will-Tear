@@ -1,9 +1,3 @@
-server:
-	cd backend && uvicorn main:app --reload --port 8000
-
-client:
-	cd frontend && pnpm run dev
-
 table:
 	cd backend && python -m app.database.create_table
 # python -m backend.app.models.user
@@ -43,11 +37,24 @@ am:
 b1:
 	cd backend/bentoml && bentoml serve service:RegressionService --port 5000
 
-b2:
-	cd backend/bentoml && bentoml serve service2:DynamicRegressionService --port 5000 --reload
+
 
 
 # When creating a new migration **change message**
 alembic:
 	cd backend && alembic revision --autogenerate -m "Initial migration"
 	cd backend && alembic upgrade head
+
+# TODO run all to start server and client
+
+migration:
+	cd backend && alembic upgrade head
+
+b2:
+	cd backend/bentoml && bentoml serve service2:DynamicRegressionService --port 5000 --reload
+
+server:
+	cd backend && uvicorn main:app --reload --port 8000
+
+client:
+	cd frontend && pnpm run dev
