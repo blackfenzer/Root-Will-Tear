@@ -76,6 +76,7 @@ export function User() {
         setUser(null); // Reset user state
         Cookies.remove('access_token'); // Optional: Remove access token cookie
         Cookies.remove('csrf_token'); // Optional: Remove CSRF token cookie
+        Cookies.remove('session_token'); // Optional: Remove session token cookie
         toast.success('Signed out successfully');
         router.push('/'); // Redirect to the homepage or another page
       }
