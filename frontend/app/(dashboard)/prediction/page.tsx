@@ -125,7 +125,7 @@ export default function PredictionPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <div className="p-8 grid grid-cols-2 gap-8">
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-lg shadow dark:bg-[#101010]">
           <h2 className="text-xl font-bold">Input</h2>
           <div className="grid grid-cols-2 gap-4 mt-4">
             <div>
@@ -180,12 +180,14 @@ export default function PredictionPage() {
           <Button
             onClick={handlePredict}
             disabled={isLoading}
-            className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1] mt-4 w-full"
+            className="mt-4 w-full bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
+                      dark:bg-[#FFFBFB] dark:border-[#141414] dark:text-[#141414] dark:hover:bg-[#212121] dark:hover:text-[#FFFBFB]"
+            variant="outline"
           >
             {isLoading ? 'Predicting...' : 'Confirm'}
           </Button>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-lg shadow dark:bg-[#101010]">
           <h2 className="text-xl font-bold">Prediction</h2>
           <Select onValueChange={setSelectedModel} value={selectedModel}>
             <SelectTrigger className="w-full mt-2">

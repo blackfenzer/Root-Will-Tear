@@ -215,7 +215,10 @@ export default function ModelManagement() {
           </Select>
 
           <Button
-            className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1]"
+            className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
+                       dark:bg-[#FFFBFB] dark:text-[#141414] dark:hover:bg-[#212121] dark:hover:border-[#212121] dark:hover:text-[#FFFBFB]
+                       transition-all duration-300"
+            variant={'outline'}
             onClick={() => {
               setEditModelName(null);
               setNewModel({
@@ -248,7 +251,7 @@ export default function ModelManagement() {
             <div className="space-y-4">
               {filteredModels.map((model, index) => (
                 <Card key={index}>
-                  <CardContent className="p-4">
+                  <CardContent className="p-4 dark:bg-[#141414]">
                     <div className="flex-1">
                       <strong className="block">{model.name}</strong>
                       <div>{`Created: ${model.created_at}`}</div>
@@ -263,7 +266,9 @@ export default function ModelManagement() {
                           <div className="flex flex-col sm:flex-row gap-2 col-span-1 sm:col-span-2">
                             {/* Edit Button */}
                             <Button
-                              className="w-full bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB] transition-all duration-300"
+                              className="w-full bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]
+                                        dark:bg-[#212121] dark:border-[#141414] dark:text-[#FFFBFB] dark:hover:bg-[#FFFBFB] dark:hover:text-[#212121]
+                                        transition-all duration-300"
                               size="sm"
                               variant="outline"
                               onClick={() => {
@@ -297,7 +302,9 @@ export default function ModelManagement() {
                         {/* Download CSV Button */}
                         {model.csv_id && (
                           <Button
-                            className="w-full col-span-1 sm:col-span-2 bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB] transition-all duration-300"
+                            className="w-full col-span-1 sm:col-span-2 bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]
+                                      dark:bg-[#212121] dark:border-[#141414] dark:text-[#FFFBFB] dark:hover:bg-[#FFFBFB] dark:hover:text-[#212121]
+                                      transition-all duration-300"
                             size="sm"
                             variant="outline"
                             onClick={() =>
@@ -350,13 +357,17 @@ export default function ModelManagement() {
                 className="mb-4"
               />
               <Button
-                className="bg-gray-400 text-white hover:bg-gray-600 mr-2"
+                variant="outline"
+                className="mr-2"
                 onClick={() => setIsCreating(false)} // Close the edit form
               >
                 Cancel
               </Button>
               <Button
-                className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1] "
+                variant="outline"
+                className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
+                          dark:bg-[#FFFBFB] dark:text-[#141414] dark:hover:bg-[#212121] dark:hover:border-[#212121] dark:hover:text-[#FFFBFB]
+                          transition-all duration-300"
                 onClick={handleCreate}
               >
                 Add Model
@@ -420,13 +431,17 @@ export default function ModelManagement() {
                 className="mb-4"
               />
               <Button
-                className="bg-gray-400 text-white hover:bg-gray-600 mr-2"
+                variant="outline"
+                className="mr-2"
                 onClick={() => setEditModelName(null)} // Close the edit form
               >
                 Cancel
               </Button>
               <Button
-                className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:text-[#493DB1]"
+                variant="outline"
+                className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
+                          dark:bg-[#FFFBFB] dark:text-[#141414] dark:hover:bg-[#212121] dark:hover:border-[#212121] dark:hover:text-[#FFFBFB]
+                          transition-all duration-300"
                 onClick={() => handleEdit(editModelName)}
               >
                 Update Model

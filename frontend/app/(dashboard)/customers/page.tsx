@@ -97,7 +97,7 @@ const CustomersPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-8">
-      <Card>
+      <Card className="dark:bg-[#141414]">
         <CardHeader>
           <CardTitle>Customers</CardTitle>
           <CardDescription>View, update, and delete customers.</CardDescription>
@@ -115,7 +115,7 @@ const CustomersPage: React.FC = () => {
                   className="flex justify-between items-center border p-4 rounded"
                 >
                   <div className="flex flex-row gap-5">
-                    <p className="font-bold">UserName: {customer.username}</p>
+                    <p className="font-bold">Username: {customer.username}</p>
                     <p>Role: {customer.role}</p>
                     <p>Status: {customer.is_active ? 'Active' : 'Inactive'}</p>
                   </div>
@@ -141,7 +141,7 @@ const CustomersPage: React.FC = () => {
                           <div>
                             <label
                               htmlFor="username"
-                              className="block text-sm font-medium text-gray-700"
+                              className="block text-sm font-medium"
                             >
                               Username
                             </label>
@@ -157,7 +157,7 @@ const CustomersPage: React.FC = () => {
                           <div>
                             <label
                               htmlFor="password"
-                              className="block text-sm font-medium text-gray-700"
+                              className="block text-sm font-medium"
                             >
                               Password
                             </label>
@@ -173,7 +173,7 @@ const CustomersPage: React.FC = () => {
                           <div>
                             <label
                               htmlFor="role"
-                              className="block text-sm font-medium text-gray-700"
+                              className="block text-sm font-medium"
                             >
                               Role
                             </label>
@@ -196,7 +196,7 @@ const CustomersPage: React.FC = () => {
                             />
                             <label
                               htmlFor="is_active"
-                              className="text-sm font-medium text-gray-700"
+                              className="text-sm font-medium"
                             >
                               Active
                             </label>
