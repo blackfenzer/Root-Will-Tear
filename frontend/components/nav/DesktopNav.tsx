@@ -29,11 +29,11 @@ export default function DesktopNav() {
           className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
         >
           <Image
-            src={'/meniscus-tear.jpg'}
+            src={'/image.png'}
             width={36}
             height={36}
             alt="Logo"
-            className="overflow-hidden rounded-full"
+            className="overflow-hidden rounded-full object-cover"
           />
         </Link>
 

@@ -53,6 +53,9 @@ power:
 migration:
 	cd backend && alembic upgrade head
 
+revision:
+	cd backend && alembic revision --autogenerate -m "smart migration"
+
 b2:
 	cd backend/bentoml && bentoml serve service2:DynamicRegressionService --port 5010 --reload
 
