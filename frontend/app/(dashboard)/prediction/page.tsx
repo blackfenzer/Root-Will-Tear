@@ -140,16 +140,19 @@ export default function PredictionPage() {
                     'Ht',
                     'BMI'
                   ] as (keyof typeof formData)[]
-                ).map((key) => (
-                  <Input
-                    key={key}
-                    type="number"
-                    name={key}
-                    placeholder={key.toUpperCase()}
-                    value={formData[key]}
-                    onChange={handleChange}
-                    className="w-full"
-                  />
+                ).map((key, index) => (
+                  <div key={index} className="flex flex-col">
+                    <span>{key}</span>
+                    <Input
+                      key={key}
+                      type="number"
+                      name={key}
+                      // placeholder={key.toUpperCase()}
+                      value={formData[key]}
+                      onChange={handleChange}
+                      className="w-full"
+                    />
+                  </div>
                 ))}
               </div>
             </div>
@@ -161,18 +164,37 @@ export default function PredictionPage() {
                     'IKDC pre',
                     'Lysholm pre',
                     'Pre KL grade',
-                    'MM extrusion pre'
+                    'MM extrusion pre',
+                    'MM gap',
+                    'Degenerative meniscus',
+                    'medial femoral condyle',
+                    'medial tibial condyle',
+                    'lateral femoral condyle',
+                    'lateral tibial condyle',
                   ] as (keyof typeof formData)[]
-                ).map((key) => (
-                  <Input
-                    key={key}
-                    type="number"
-                    name={key}
-                    placeholder={key.toUpperCase()}
-                    value={formData[key]}
-                    onChange={handleChange}
-                    className="w-full"
-                  />
+                ).map((key, index) => (
+                  <div key={index} className="flex flex-col">
+                    <span>{key}</span>
+                    <Input
+                      key={key}
+                      type="number"
+                      name={key}
+                      // placeholder={key.toUpperCase()}
+                      value={formData[key]}
+                      onChange={handleChange}
+                      className="w-full"
+                    />
+                  </div>
+                  // <span></span>
+                  // <Input
+                  //   key={key}
+                  //   type="number"
+                  //   name={key}
+                  //   placeholder={key.toUpperCase()}
+                  //   value={formData[key]}
+                  //   onChange={handleChange}
+                  //   className="w-full"
+                  // />
                 ))}
               </div>
             </div>
