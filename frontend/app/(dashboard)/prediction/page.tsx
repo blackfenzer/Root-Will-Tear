@@ -127,7 +127,7 @@ export default function PredictionPage() {
       <div className="p-8 grid grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-lg shadow dark:bg-[#101010]">
           <h2 className="text-xl font-bold">Input</h2>
-          <div className="grid grid-cols-2 gap-4 mt-4">
+          <div className="grid grid-cols-[1fr_2fr] gap-4 mt-4">
             <div>
               <h3 className="font-semibold mb-2">Patient Information</h3>
               <div className="space-y-3">
@@ -141,16 +141,16 @@ export default function PredictionPage() {
                     'BMI'
                   ] as (keyof typeof formData)[]
                 ).map((key, index) => (
-                  <div key={index} className="flex flex-col">
+                  <div key={index} className="flex items-center justify-between">
                     <span>{key}</span>
                     <Input
                       key={key}
                       type="number"
                       name={key}
-                      // placeholder={key.toUpperCase()}
+                      placeholder={key.toUpperCase()}
                       value={formData[key]}
                       onChange={handleChange}
-                      className="w-full"
+                      className="w-4/5"
                     />
                   </div>
                 ))}
@@ -173,16 +173,16 @@ export default function PredictionPage() {
                     'lateral tibial condyle',
                   ] as (keyof typeof formData)[]
                 ).map((key, index) => (
-                  <div key={index} className="flex flex-col">
+                  <div key={index} className="flex items-center justify-between">
                     <span>{key}</span>
                     <Input
                       key={key}
                       type="number"
                       name={key}
-                      // placeholder={key.toUpperCase()}
+                      placeholder={key.toUpperCase()}
                       value={formData[key]}
                       onChange={handleChange}
-                      className="w-full"
+                      className="w-2/3"
                     />
                   </div>
                   // <span></span>
@@ -223,7 +223,12 @@ export default function PredictionPage() {
               ))}
             </SelectContent>
           </Select>
-          <h1>this is prediction result {result}</h1>
+          <div className="mt-4 p-4 border rounded-lg bg-gray-100 dark:bg-[#212121]">
+            <h3 className="font-semibold">Prediction Result</h3>
+            <div className="mt-2 p-2 text-lg font-bold bg-white dark:bg-[#101010] rounded-md shadow">
+              {result || "No prediction yet"}
+            </div>
+          </div>
           {/* {predictions && (
             <ResponsiveContainer width="100%" height={300} className="mt-4">
               <LineChart data={predictions}>

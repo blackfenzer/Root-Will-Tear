@@ -23,7 +23,7 @@ export default function RootLayout({
         <UserProvider>
           <ProtectedRoute>
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-              <div className="relative flex min-h-screen flex-col">
+              <div className="relative flex min-h-screen flex-col dark:[#1A1A1A]">
                 <ToasterProvider />
                 <div className="flex-1">{children}</div>
                 {/* <Footer /> */}
