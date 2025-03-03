@@ -15,10 +15,15 @@ import {
 import { toast } from 'react-hot-toast';
 import Footer from '@/components/footer/page';
 import apiClient from '@/lib/axios';
-import { User } from 'types/user';
-import Cookies from 'js-cookie';
-import axios from 'axios';
 import { useUser } from 'context/UserContext';
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from '@/components/ui/dialog';
 
 const Spinner = () => (
   <div className="animate-spin w-5 h-5 border-t-2 border-blue-500 rounded-full" />
@@ -75,6 +80,18 @@ export default function ModelManagement() {
   // const [user, setUser] = useState<User | null>(null); // State to store the user info
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const { user } = useUser();
+  // State for delete confirmation modal
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteModelName, setDeleteModelName] = useState<string | null>(null);
+
+  // Function to handle deletion after confirmation
+  const confirmDelete = async () => {
+    if (deleteModelName) {
+      await handleDelete(deleteModelName);
+      setIsDeleteModalOpen(false);
+      setDeleteModelName(null);
+    }
+  };
 
   useEffect(() => {
     const fetchModels = async () => {
@@ -288,15 +305,49 @@ export default function ModelManagement() {
                               Edit
                             </Button>
 
-                            {/* Delete Button */}
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDelete(model.name)}
-                              className="w-full transition-all duration-300"
+                            {/* Delete Button with Confirmation Modal */}
+                            <Dialog
+                              open={isDeleteModalOpen}
+                              onOpenChange={setIsDeleteModalOpen}
                             >
-                              Delete
-                            </Button>
+                              <DialogTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  className="w-full transition-all duration-300"
+                                  onClick={() => {
+                                    setDeleteModelName(model.name);
+                                    setIsDeleteModalOpen(true);
+                                  }}
+                                >
+                                  Delete
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Are you sure?</DialogTitle>
+                                </DialogHeader>
+                                <p>
+                                  This action cannot be undone. Are you sure you
+                                  want to delete model{' '}
+                                  <strong>{deleteModelName}</strong>?
+                                </p>
+                                <DialogFooter>
+                                  <Button
+                                    variant="secondary"
+                                    onClick={() => setIsDeleteModalOpen(false)}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    onClick={confirmDelete}
+                                  >
+                                    Confirm
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
                           </div>
                         )}
 
