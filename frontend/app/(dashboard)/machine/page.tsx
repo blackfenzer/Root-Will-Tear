@@ -256,6 +256,7 @@ export default function ModelManagement() {
                       <strong className="block">{model.name}</strong>
                       <div>{`Created: ${model.created_at}`}</div>
                       <div>{`Architecture: ${model.model_architecture}`}</div>
+                      <div>{`RMSE: ${model.final_loss}`}</div>
                       <div>{`BentoML Tag: ${model.bentoml_tag}`}</div>
                     </div>
                     <div className="flex flex-col gap-2 mt-2">
