@@ -24,9 +24,10 @@ import {
   DialogTitle,
   DialogFooter
 } from '@/components/ui/dialog';
+import { is } from 'drizzle-orm';
 
 const Spinner = () => (
-  <div className="animate-spin w-5 h-5 border-t-2 border-blue-500 rounded-full" />
+  <div className="animate-spin w-5 h-5 border-2 border-gray-300 border-t-2 border-t-blue-500 rounded-full"></div>
 );
 
 // TypeScript interfaces for model data and update payload
@@ -74,6 +75,7 @@ export default function ModelManagement() {
   // When editing, we use the model's name as its identifier.
   const [editModelName, setEditModelName] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isClick, setIsClick] = useState(false);
 
   // File state for CSV uploads
   const [file, setFile] = useState<File | null>(null);
@@ -126,6 +128,7 @@ export default function ModelManagement() {
       return;
     }
     setIsCreating(true);
+    setIsClick(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -154,13 +157,14 @@ export default function ModelManagement() {
       setTrainingDescription('');
       setTrainingVersion('');
       setFile(null);
-      setIsCreating(false);
+      // setIsCreating(false);
       handleModelAdded();
       toast.success('Model trained and CSV uploaded successfully!');
     } catch (error) {
       toast.error('Failed to train model');
     } finally {
       setIsCreating(false);
+      setIsClick(false);
     }
   };
 
@@ -218,7 +222,7 @@ export default function ModelManagement() {
     <div className="flex flex-col min-h-screen">
       <div className="p-8">
         <div className="flex gap-4 mb-8">
-          <Select>
+          {/* <Select>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Select Model" />
             </SelectTrigger>
@@ -229,7 +233,7 @@ export default function ModelManagement() {
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>
+          </Select> */}
 
           <Button
             className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
@@ -408,22 +412,24 @@ export default function ModelManagement() {
                 placeholder="Training Version"
                 className="mb-4"
               />
-              <Button
-                variant="outline"
-                className="mr-2"
-                onClick={() => setIsCreating(false)} // Close the edit form
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="outline"
-                className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
-                          dark:bg-[#FFFBFB] dark:text-[#141414] dark:hover:bg-[#212121] dark:hover:border-[#212121] dark:hover:text-[#FFFBFB]
-                          transition-all duration-300"
-                onClick={handleCreate}
-              >
-                Add Model
-              </Button>
+              <div className="flex w-full">
+                <Button
+                  variant="outline"
+                  className="mr-2"
+                  onClick={() => setIsCreating(false)} // Close the edit form
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="outline"
+                  className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
+            dark:bg-[#FFFBFB] dark:text-[#141414] dark:hover:bg-[#212121] dark:hover:border-[#212121] dark:hover:text-[#FFFBFB]
+            transition-all duration-300"
+                  onClick={handleCreate}
+                >
+                  {isClick ? <Spinner /> : 'Add Model'}
+                </Button>
+              </div>
             </div>
           )}
 
