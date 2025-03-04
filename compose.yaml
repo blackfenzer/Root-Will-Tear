@@ -29,12 +29,12 @@ services:
       retries: 5
 
   bentoml:
-    image: dynamic_regression_service:zbhqbu7y2653fwf3
+    image: dynamic_regression_service:37e3dxxy3c3ivwf3
     container_name: bentoml
     environment:
       - BENTOML_ENV=development
     ports:
-      - "5010:5010"
+      - "5010:3000"
     # depends_on:
     #   fastapi:
     #     condition: service_healthy
