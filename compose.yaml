@@ -29,18 +29,17 @@ services:
       retries: 5
 
   bentoml:
-    build: ./bentoml
+    image: dynamic_regression_service:zbhqbu7y2653fwf3
     container_name: bentoml
     environment:
       - BENTOML_ENV=development
     ports:
-      - "5000:5000"
-    # Optionally, you can depend on FastAPI if this service also needs it.
-    depends_on:
-      fastapi:
-        condition: service_healthy
+      - "5010:5010"
+    # depends_on:
+    #   fastapi:
+    #     condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5010/health"]
       interval: 30s
       timeout: 10s
       retries: 5
