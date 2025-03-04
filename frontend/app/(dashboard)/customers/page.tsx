@@ -18,7 +18,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogClose
+  DialogClose,
+  DialogFooter
 } from '@/components/ui/dialog';
 import Footer from '@/components/footer/page';
 
@@ -30,6 +31,17 @@ const CustomersPage: React.FC = () => {
     null
   );
   const [formData, setFormData] = useState<CustomerUpdateData>({});
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteCustomerId, setDeleteCustomerId] = useState<number | null>(null);
+
+  // Function to handle deletion after confirmation
+  const confirmDelete = async () => {
+    if (deleteCustomerId) {
+      await handleDeleteClick(deleteCustomerId);
+      setIsDeleteModalOpen(false);
+      setDeleteCustomerId(null);
+    }
+  };
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -210,12 +222,54 @@ const CustomersPage: React.FC = () => {
                         </form>
                       </DialogContent>
                     </Dialog>
-                    <Button
+
+                    {/* <Button
                       variant="destructive"
                       onClick={() => handleDeleteClick(customer.id)}
                     >
                       Delete
-                    </Button>
+                    </Button> */}
+                    <Dialog
+                      open={isDeleteModalOpen}
+                      onOpenChange={setIsDeleteModalOpen}
+                    >
+                      <DialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          // className="w-full transition-all duration-300"
+                          onClick={() => {
+                            setDeleteCustomerId(customer.id);
+                            setIsDeleteModalOpen(true);
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Are you sure?</DialogTitle>
+                        </DialogHeader>
+                        <p>
+                          This action cannot be undone. Are you sure you want to
+                          delete user <strong>{customer.username}</strong>?
+                        </p>
+                        <DialogFooter>
+                          <Button
+                            variant="secondary"
+                            onClick={() => setIsDeleteModalOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            onClick={() => handleDeleteClick(customer.id)}
+                          >
+                            Delete
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </li>
               ))}
