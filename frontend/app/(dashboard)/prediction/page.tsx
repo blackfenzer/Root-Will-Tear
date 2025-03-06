@@ -9,7 +9,9 @@ import {
   Tooltip,
   CartesianGrid,
   ResponsiveContainer,
-  Legend
+  Legend,
+  BarChart,
+  Bar
 } from 'recharts';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -45,6 +47,9 @@ export default function PredictionPage() {
   const [predictions, setPredictions] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [featureImportance, setFeatureImportance] = useState<
+    { feature: string; importance: number }[]
+  >([]);
 
   useEffect(() => {
     const fetchModels = async () => {
@@ -87,6 +92,19 @@ export default function PredictionPage() {
       );
 
       const d = response.data;
+      console.log(d[0]?.feature_importance);
+
+      if (d[0]?.feature_importance) {
+        const fi = d[0].feature_importance;
+        const featureImportanceData = Object.entries(fi).map(
+          ([key, value]) => ({
+            feature: key,
+            importance: value as number
+          })
+        );
+        setFeatureImportance(featureImportanceData);
+      }
+
       if (Array.isArray(d) && d[1] === 200) {
         const predictionValue = d[0]?.prediction?.[0]?.[0];
         setResult(predictionValue);
@@ -205,7 +223,22 @@ export default function PredictionPage() {
               {result || 'No prediction yet'}
             </div>
           </div>
-          {/* Uncomment and adjust the chart section as needed */}
+
+          {featureImportance.length > 0 && (
+            <div className="mt-8 bg-white p-6 rounded-lg shadow dark:bg-[#101010]">
+              <h2 className="text-xl font-bold mb-4">Feature Importance</h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={featureImportance} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis dataKey="feature" type="category" />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="importance" fill="#8884d8" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
           {/* {predictions && (
             <ResponsiveContainer width="100%" height={300} className="mt-4">
               <LineChart data={predictions}>
