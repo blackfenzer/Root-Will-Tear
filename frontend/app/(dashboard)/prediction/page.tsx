@@ -9,7 +9,9 @@ import {
   Tooltip,
   CartesianGrid,
   ResponsiveContainer,
-  Legend
+  Legend,
+  BarChart,
+  Bar
 } from 'recharts';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -49,6 +51,9 @@ export default function PredictionPage() {
   const [predictions, setPredictions] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [featureImportance, setFeatureImportance] = useState<
+    { feature: string; importance: number }[]
+  >([]);
 
   useEffect(() => {
     const sessionToken = Cookies.get('session_token');
@@ -102,10 +107,20 @@ export default function PredictionPage() {
       // console.log('example ', response);
       // console.log(`Type of response: ${typeof response}`);
       const d = response.data;
-      if (
-        Array.isArray(d) &&
-        d[1] === 200
-      ) {
+      console.log(d[0]?.feature_importance);
+
+      if (d[0]?.feature_importance) {
+        const fi = d[0].feature_importance;
+        const featureImportanceData = Object.entries(fi).map(
+          ([key, value]) => ({
+            feature: key,
+            importance: value as number
+          })
+        );
+        setFeatureImportance(featureImportanceData);
+      }
+
+      if (Array.isArray(d) && d[1] === 200) {
         const predictionValue = d[0]?.prediction?.[0]?.[0];
         setResult(predictionValue);
       } else {
@@ -141,7 +156,10 @@ export default function PredictionPage() {
                     'BMI'
                   ] as (keyof typeof formData)[]
                 ).map((key, index) => (
-                  <div key={index} className="flex items-center justify-between">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between"
+                  >
                     <span>{key}</span>
                     <Input
                       key={key}
@@ -170,10 +188,13 @@ export default function PredictionPage() {
                     'medial femoral condyle',
                     'medial tibial condyle',
                     'lateral femoral condyle',
-                    'lateral tibial condyle',
+                    'lateral tibial condyle'
                   ] as (keyof typeof formData)[]
                 ).map((key, index) => (
-                  <div key={index} className="flex items-center justify-between">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between"
+                  >
                     <span>{key}</span>
                     <Input
                       key={key}
@@ -226,9 +247,25 @@ export default function PredictionPage() {
           <div className="mt-4 p-4 border rounded-lg bg-gray-100 dark:bg-[#212121]">
             <h3 className="font-semibold">Prediction Result</h3>
             <div className="mt-2 p-2 text-lg font-bold bg-white dark:bg-[#101010] rounded-md shadow">
-              {result || "No prediction yet"}
+              {result || 'No prediction yet'}
             </div>
           </div>
+
+          {featureImportance.length > 0 && (
+            <div className="mt-8 bg-white p-6 rounded-lg shadow dark:bg-[#101010]">
+              <h2 className="text-xl font-bold mb-4">Feature Importance</h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={featureImportance} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis dataKey="feature" type="category" />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="importance" fill="#8884d8" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
           {/* {predictions && (
             <ResponsiveContainer width="100%" height={300} className="mt-4">
               <LineChart data={predictions}>
