@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import {
   Home,
@@ -33,6 +35,7 @@ import Image from 'next/image';
 import { ModeToggle } from '@/components/theme/mode';
 import { DialogTitle } from '@radix-ui/react-dialog'; 
 import DesktopNav from '@/components/nav/DesktopNav';
+import { useState } from 'react'; 
 // import { useUser } from 'context/UserContext';
 
 export default function DashboardLayout({
@@ -61,16 +64,22 @@ export default function DashboardLayout({
     </Providers>
   );
 }
-
 function MobileNav() {
+  const [isOpen, setIsOpen] = useState(false); // State to manage the open/close state of the sheet
+
+  const handleLinkClick = () => {
+    setIsOpen(false); // Close the sheet when a link is clicked
+  };
+
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button
           size="icon"
           variant="outline"
           className="sm:hidden"
           aria-label="Toggle Navigation Menu"
+          onClick={() => setIsOpen(!isOpen)} // Toggle the menu on button click
         >
           <PanelLeft className="h-5 w-5" />
           <span className="sr-only">Toggle Menu</span>{' '}
@@ -79,16 +88,14 @@ function MobileNav() {
       </SheetTrigger>
 
       <SheetContent side="left" className="sm:max-w-xs">
-        <DialogTitle
-          className="hidden"
-        >Navigation
-        </DialogTitle>
+        <DialogTitle className="hidden">Navigation</DialogTitle>
 
         <nav className="grid gap-6 text-lg font-medium">
           <Link
             href="/"
             className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             aria-label="Go to Dashboard"
+            onClick={handleLinkClick} // Close the menu when clicked
           >
             <Home className="h-5 w-5" />
             Dashboard
@@ -98,6 +105,7 @@ function MobileNav() {
             href="/machine"
             className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             aria-label="Manage Model"
+            onClick={handleLinkClick} // Close the menu when clicked
           >
             <BrainCircuit className="h-5 w-5" />
             Manage Model
@@ -107,6 +115,7 @@ function MobileNav() {
             href="/prediction"
             className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             aria-label="Go to Prediction"
+            onClick={handleLinkClick} // Close the menu when clicked
           >
             <Wand className="h-5 w-5" />
             Prediction
@@ -116,6 +125,7 @@ function MobileNav() {
             href="/customers"
             className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             aria-label="View Customers"
+            onClick={handleLinkClick} // Close the menu when clicked
           >
             <Users2 className="h-5 w-5" />
             Customers
@@ -126,6 +136,7 @@ function MobileNav() {
             href="#"
             className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
             aria-label="Go to Settings"
+            onClick={handleLinkClick} // Close the menu when clicked
           >
             <LineChart className="h-5 w-5" />
             Settings
@@ -135,7 +146,6 @@ function MobileNav() {
     </Sheet>
   );
 }
-
 function DashboardBreadcrumb() {
   return (
     <Breadcrumb className="hidden md:flex">
