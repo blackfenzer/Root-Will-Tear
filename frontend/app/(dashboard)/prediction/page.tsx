@@ -99,6 +99,7 @@ export default function PredictionPage() {
 
       const d = response.data;
       console.log(d[0]?.feature_importance);
+      console.log(d[0]?.prediction);
 
       if (d[0]?.feature_importance) {
         const fi = d[0].feature_importance;
@@ -112,7 +113,7 @@ export default function PredictionPage() {
       }
 
       if (Array.isArray(d) && d[1] === 200) {
-        const predictionValue = d[0]?.prediction?.[0]?.[0];
+        const predictionValue = d[0]?.prediction;
         setResult(predictionValue);
       } else {
         throw new Error('Unexpected response structure');
@@ -224,7 +225,7 @@ export default function PredictionPage() {
             </SelectContent>
           </Select>
           <div className="mt-4 p-4 border rounded-lg bg-gray-100 dark:bg-[#212121]">
-            <div className="font-bold text-lg">Prediction Result</div>
+            <div className="font-bold text-lg">Prediction Result (IKDC 2 Year)</div>
             <div className="mt-2 p-2 text-base font-semibold bg-white dark:bg-[#101010] rounded-md shadow">
               {result || 'No prediction yet'}
             </div>
