@@ -1,7 +1,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +10,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
+import { User as UserIcon} from 'lucide-react';
 import { useUser } from 'context/UserContext';
 
 export function User() {
@@ -24,13 +24,7 @@ export function User() {
           size="icon"
           className="overflow-hidden rounded-full"
         >
-          <Image
-            src={'/placeholder-user.jpg'}
-            width={36}
-            height={36}
-            alt="Avatar"
-            className="overflow-hidden rounded-full"
-          />
+          <UserIcon/>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
