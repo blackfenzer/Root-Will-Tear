@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import {
   LineChart,
   Line,
@@ -9,7 +9,9 @@ import {
   Tooltip,
   CartesianGrid,
   ResponsiveContainer,
-  Legend
+  Legend,
+  BarChart,
+  Bar
 } from 'recharts';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -22,12 +24,8 @@ import {
 } from '@/components/ui/select';
 import Footer from '@/components/footer/page';
 import { toast } from 'react-hot-toast';
-import { ChangeEvent } from 'react';
 import apiClient from '@/lib/axios';
 import { Model } from 'types/model';
-// const apiClient = axios.create({
-//   baseURL: process.env.NEXT_PUBLIC_BACKEND_URL
-// });
 import Cookies from 'js-cookie';
 
 export default function PredictionPage() {
@@ -49,9 +47,11 @@ export default function PredictionPage() {
   const [predictions, setPredictions] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [featureImportance, setFeatureImportance] = useState<
+    { feature: string; importance: number }[]
+  >([]);
 
   useEffect(() => {
-    const sessionToken = Cookies.get('session_token');
     const fetchModels = async () => {
       try {
         const response = await apiClient.get('/api/v1/model/');
@@ -80,7 +80,6 @@ export default function PredictionPage() {
 
     setIsLoading(true);
     try {
-      const sessionToken = Cookies.get('session_token');
       const response = await apiClient.post(
         `/nn/${selectedModel}`,
         {
@@ -92,27 +91,26 @@ export default function PredictionPage() {
         }
       );
 
-      // Transform response data for chart
-      // const chartData = Object.entries(response.data.predictions).map(
-      //   ([time, values]) => ({
-      //     time,
-      //     ...values
-      //   })
-      // );
-      // console.log('example ', response);
-      // console.log(`Type of response: ${typeof response}`);
       const d = response.data;
-      if (
-        Array.isArray(d) &&
-        d[1] === 200
-      ) {
+      console.log(d[0]?.feature_importance);
+
+      if (d[0]?.feature_importance) {
+        const fi = d[0].feature_importance;
+        const featureImportanceData = Object.entries(fi).map(
+          ([key, value]) => ({
+            feature: key,
+            importance: value as number
+          })
+        );
+        setFeatureImportance(featureImportanceData);
+      }
+
+      if (Array.isArray(d) && d[1] === 200) {
         const predictionValue = d[0]?.prediction?.[0]?.[0];
         setResult(predictionValue);
       } else {
         throw new Error('Unexpected response structure');
       }
-
-      // setPredictions(chartData);
       toast.success('Prediction successful');
     } catch (error) {
       console.error('Prediction error:', error);
@@ -124,10 +122,12 @@ export default function PredictionPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="p-8 grid grid-cols-2 gap-8">
+      {/* Responsive grid: single column on small screens, two columns on md+ */}
+      <div className="p-4 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-lg shadow dark:bg-[#101010]">
           <h2 className="text-xl font-bold">Input</h2>
-          <div className="grid grid-cols-[1fr_2fr] gap-4 mt-4">
+          {/* Responsive grid: stack on mobile and show side-by-side on md+ */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 mt-4">
             <div>
               <h3 className="font-semibold mb-2">Patient Information</h3>
               <div className="space-y-3">
@@ -141,10 +141,12 @@ export default function PredictionPage() {
                     'BMI'
                   ] as (keyof typeof formData)[]
                 ).map((key, index) => (
-                  <div key={index} className="flex items-center justify-between">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between"
+                  >
                     <span>{key}</span>
                     <Input
-                      key={key}
                       type="number"
                       name={key}
                       placeholder={key.toUpperCase()}
@@ -170,13 +172,15 @@ export default function PredictionPage() {
                     'medial femoral condyle',
                     'medial tibial condyle',
                     'lateral femoral condyle',
-                    'lateral tibial condyle',
+                    'lateral tibial condyle'
                   ] as (keyof typeof formData)[]
                 ).map((key, index) => (
-                  <div key={index} className="flex items-center justify-between">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between"
+                  >
                     <span>{key}</span>
                     <Input
-                      key={key}
                       type="number"
                       name={key}
                       placeholder={key.toUpperCase()}
@@ -185,16 +189,6 @@ export default function PredictionPage() {
                       className="w-2/3"
                     />
                   </div>
-                  // <span></span>
-                  // <Input
-                  //   key={key}
-                  //   type="number"
-                  //   name={key}
-                  //   placeholder={key.toUpperCase()}
-                  //   value={formData[key]}
-                  //   onChange={handleChange}
-                  //   className="w-full"
-                  // />
                 ))}
               </div>
             </div>
@@ -224,11 +218,27 @@ export default function PredictionPage() {
             </SelectContent>
           </Select>
           <div className="mt-4 p-4 border rounded-lg bg-gray-100 dark:bg-[#212121]">
-            <h3 className="font-semibold">Prediction Result</h3>
-            <div className="mt-2 p-2 text-lg font-bold bg-white dark:bg-[#101010] rounded-md shadow">
-              {result || "No prediction yet"}
+            <div className="font-bold text-lg">Prediction Result</div>
+            <div className="mt-2 p-2 text-base font-semibold bg-white dark:bg-[#101010] rounded-md shadow">
+              {result || 'No prediction yet'}
             </div>
           </div>
+
+          {featureImportance.length > 0 && (
+            <div className="mt-8 bg-white p-6 rounded-lg shadow dark:bg-[#101010]">
+              <h2 className="text-xl font-bold mb-4">Feature Importance</h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={featureImportance} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis dataKey="feature" type="category" />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="importance" fill="#8884d8" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
           {/* {predictions && (
             <ResponsiveContainer width="100%" height={300} className="mt-4">
               <LineChart data={predictions}>

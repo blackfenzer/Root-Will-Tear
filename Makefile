@@ -53,14 +53,17 @@ power:
 migration:
 	cd backend && alembic upgrade head
 
-revision:
-	cd backend && alembic revision --autogenerate -m "smart migration"
+# revision:
+# 	cd backend && alembic revision --autogenerate -m "smart migration"
 
 b2:
-	cd backend/bentoml && bentoml serve service2:DynamicRegressionService --port 5010 --reload
+	cd backend/bentoml && bentoml serve service:DynamicRegressionService --port 5010 --reload
 
 server:
 	cd backend && uvicorn main:app --reload --port 8000
 
 client:
 	cd frontend && pnpm run dev
+
+seed:
+	cd backend && python -m app.seeds.seed_admin

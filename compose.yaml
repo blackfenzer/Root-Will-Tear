@@ -1,36 +1,45 @@
 services:
   frontend:
     build: ./frontend
+    container_name: next
+    hostname: next
     ports:
       - "3000:3000"
-    depends_on:
-      backend:
-        condition: service_healthy
+    # depends_on:
+    #   fastapi:
+    #     condition: service_healthy
     healthcheck:
-      test: ["curl", "-f", "http://localhost:3000"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
-  backend:
+  fastapi:
     build: ./backend
+    container_name: fastapi
+    environment:
+      - STAGE=development
+      - PYTHONUNBUFFERED=1
     ports:
       - "8000:8000"
-    depends_on:
-      bentoml:
-        condition: service_healthy
     healthcheck:
-      test: ["curl", "-f", "http://localhost:8000"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   bentoml:
-    build: ./backend/bentoml
+    image: dynamic_regression_service:37e3dxxy3c3ivwf3
+    container_name: bentoml
+    environment:
+      - BENTOML_ENV=development
     ports:
-      - "5010:5010"
+      - "5010:3000"
+    # depends_on:
+    #   fastapi:
+    #     condition: service_healthy
     healthcheck:
-      test: ["curl", "-f", "http://localhost:5010"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      test: ["CMD", "curl", "-f", "http://localhost:5010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5

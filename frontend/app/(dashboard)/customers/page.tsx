@@ -124,14 +124,14 @@ const CustomersPage: React.FC = () => {
               {customers.map((customer) => (
                 <li
                   key={customer.id}
-                  className="flex justify-between items-center border p-4 rounded"
+                  className="flex flex-col md:flex-row justify-between items-start md:items-center border p-4 rounded"
                 >
-                  <div className="flex flex-row gap-5">
+                  <div className="flex flex-col md:flex-row gap-3">
                     <p className="font-bold">Username: {customer.username}</p>
                     <p>Role: {customer.role}</p>
                     <p>Status: {customer.is_active ? 'Active' : 'Inactive'}</p>
                   </div>
-                  <div className="space-x-2">
+                  <div className="mt-4 md:mt-0 flex flex-row gap-2">
                     {/* Edit Modal using shadcn/ui Dialog */}
                     <Dialog>
                       <DialogTrigger asChild>
@@ -164,6 +164,7 @@ const CustomersPage: React.FC = () => {
                               value={formData.username || ''}
                               onChange={handleInputChange}
                               required
+                              className="w-full"
                             />
                           </div>
                           <div>
@@ -180,6 +181,7 @@ const CustomersPage: React.FC = () => {
                               placeholder="Leave blank to keep unchanged"
                               value={formData.password || ''}
                               onChange={handleInputChange}
+                              className="w-full"
                             />
                           </div>
                           <div>
@@ -195,6 +197,7 @@ const CustomersPage: React.FC = () => {
                               type="text"
                               value={formData.role || ''}
                               onChange={handleInputChange}
+                              className="w-full"
                             />
                           </div>
                           <div className="flex items-center">
@@ -223,12 +226,7 @@ const CustomersPage: React.FC = () => {
                       </DialogContent>
                     </Dialog>
 
-                    {/* <Button
-                      variant="destructive"
-                      onClick={() => handleDeleteClick(customer.id)}
-                    >
-                      Delete
-                    </Button> */}
+                    {/* Delete Modal */}
                     <Dialog
                       open={isDeleteModalOpen}
                       onOpenChange={setIsDeleteModalOpen}
@@ -237,7 +235,6 @@ const CustomersPage: React.FC = () => {
                         <Button
                           size="sm"
                           variant="destructive"
-                          // className="w-full transition-all duration-300"
                           onClick={() => {
                             setDeleteCustomerId(customer.id);
                             setIsDeleteModalOpen(true);
