@@ -7,9 +7,16 @@ import ProtectedRoute from '@/components/protected/protectedRoute';
 import { UserProvider } from 'context/UserContext';
 
 export const metadata = {
-  title: 'Next.js App Router + NextAuth + Tailwind CSS',
-  description:
-    'A user admin dashboard configured with Next.js, Postgres, NextAuth, Tailwind CSS, TypeScript, and Prettier.'
+  title: 'Meniscus Dashboard',
+  description: 'Smart',
+  icons: {
+    icon: [
+      {
+        url: '../image1.png', // /public path
+        href: '../image1.png' // /public path
+      }
+    ]
+  }
 };
 
 export default function RootLayout({

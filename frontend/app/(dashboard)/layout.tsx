@@ -31,7 +31,7 @@ import { NavItem } from './nav-item';
 import { SearchInput } from './search';
 import Image from 'next/image';
 import { ModeToggle } from '@/components/theme/mode';
-import { DialogTitle } from '@radix-ui/react-dialog'; 
+import { DialogTitle } from '@radix-ui/react-dialog';
 import DesktopNav from '@/components/nav/DesktopNav';
 // import { useUser } from 'context/UserContext';
 
@@ -79,10 +79,7 @@ function MobileNav() {
       </SheetTrigger>
 
       <SheetContent side="left" className="sm:max-w-xs">
-        <DialogTitle
-          className="hidden"
-        >Navigation
-        </DialogTitle>
+        <DialogTitle className="hidden">Navigation</DialogTitle>
 
         <nav className="grid gap-6 text-lg font-medium">
           <Link
@@ -133,29 +130,5 @@ function MobileNav() {
         </nav>
       </SheetContent>
     </Sheet>
-  );
-}
-
-function DashboardBreadcrumb() {
-  return (
-    <Breadcrumb className="hidden md:flex">
-      <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink asChild>
-            <Link href="#">Dashboard</Link>
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbLink asChild>
-            <Link href="#">Products</Link>
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbPage>All Products</BreadcrumbPage>
-        </BreadcrumbItem>
-      </BreadcrumbList>
-    </Breadcrumb>
   );
 }
