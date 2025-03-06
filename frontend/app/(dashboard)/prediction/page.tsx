@@ -30,16 +30,22 @@ import Cookies from 'js-cookie';
 
 export default function PredictionPage() {
   const [formData, setFormData] = useState({
-    sex: '',
-    age: '',
-    side: '',
-    BW: '',
-    Ht: '',
-    BMI: '',
+    'sex': '',
+    'age': '',
+    'side': '',
+    'BW': '',
+    'Ht': '',
+    'BMI': '',
     'IKDC pre': '',
     'Lysholm pre': '',
     'Pre KL grade': '',
-    'MM extrusion pre': ''
+    'MM extrusion pre': '',
+    'MM gap': '',
+    'Degenerative meniscus': '',
+    'medial femoral condyle': '',
+    'medial tibial condyle': '',
+    'lateral femoral condyle': '',
+    'lateral tibial condyle': ''
   });
 
   const [models, setModels] = useState<Model[]>([]);
