@@ -79,7 +79,6 @@ export default function ModelManagement() {
 
   // File state for CSV uploads
   const [file, setFile] = useState<File | null>(null);
-  // const [user, setUser] = useState<User | null>(null); // State to store the user info
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const { user } = useUser();
   // State for delete confirmation modal
@@ -157,7 +156,6 @@ export default function ModelManagement() {
       setTrainingDescription('');
       setTrainingVersion('');
       setFile(null);
-      // setIsCreating(false);
       handleModelAdded();
       toast.success('Model trained and CSV uploaded successfully!');
     } catch (error) {
@@ -220,21 +218,8 @@ export default function ModelManagement() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="p-8">
-        <div className="flex gap-4 mb-8">
-          {/* <Select>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Select Model" />
-            </SelectTrigger>
-            <SelectContent>
-              {models.map((model, index) => (
-                <SelectItem key={index} value={model.name}>
-                  {`${model.name} (${model.created_at})`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select> */}
-
+      <div className="p-4 md:p-8">
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
           <Button
             className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
                        dark:bg-[#FFFBFB] dark:text-[#141414] dark:hover:bg-[#212121] dark:hover:border-[#212121] dark:hover:text-[#FFFBFB]
@@ -260,9 +245,9 @@ export default function ModelManagement() {
           </Button>
         </div>
 
-        <div className="flex flex-wrap gap-8">
+        <div className="flex flex-col md:flex-row gap-8">
           {/* Left Column: List of Models */}
-          <div className="w-1/2">
+          <div className="w-full md:w-1/2">
             <Input
               placeholder="Filter"
               value={filter}
@@ -281,12 +266,9 @@ export default function ModelManagement() {
                       <div>{`BentoML Tag: ${model.bentoml_tag}`}</div>
                     </div>
                     <div className="flex flex-col gap-2 mt-2">
-                      {/* Container for Admin Buttons and Download CSV */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {/* Admin Buttons */}
                         {user?.role === 'admin' && (
                           <div className="flex flex-col sm:flex-row gap-2 col-span-1 sm:col-span-2">
-                            {/* Edit Button */}
                             <Button
                               className="w-full bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]
                                         dark:bg-[#212121] dark:border-[#141414] dark:text-[#FFFBFB] dark:hover:bg-[#FFFBFB] dark:hover:text-[#212121]
@@ -308,8 +290,6 @@ export default function ModelManagement() {
                             >
                               Edit
                             </Button>
-
-                            {/* Delete Button with Confirmation Modal */}
                             <Dialog
                               open={isDeleteModalOpen}
                               onOpenChange={setIsDeleteModalOpen}
@@ -354,8 +334,6 @@ export default function ModelManagement() {
                             </Dialog>
                           </div>
                         )}
-
-                        {/* Download CSV Button */}
                         {model.csv_id && (
                           <Button
                             className="w-full col-span-1 sm:col-span-2 bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]
@@ -380,7 +358,7 @@ export default function ModelManagement() {
 
           {/* Right Column: Create/Edit Form */}
           {isCreating && (
-            <div className="w-5/12">
+            <div className="w-full md:w-1/2">
               <h2 className="text-xl font-bold mb-4">Create New Model</h2>
               <Label>Name</Label>
               <Input
@@ -412,12 +390,8 @@ export default function ModelManagement() {
                 placeholder="Training Version"
                 className="mb-4"
               />
-              <div className="flex w-full">
-                <Button
-                  variant="outline"
-                  className="mr-2"
-                  onClick={() => setIsCreating(false)} // Close the edit form
-                >
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button variant="outline" onClick={() => setIsCreating(false)}>
                   Cancel
                 </Button>
                 <Button
@@ -434,7 +408,7 @@ export default function ModelManagement() {
           )}
 
           {editModelName !== null && (
-            <div className="w-5/12">
+            <div className="w-full md:w-1/2">
               <h2 className="text-xl font-bold mb-4">Edit Model</h2>
               <Label>Model Architecture</Label>
               <Input
@@ -488,22 +462,23 @@ export default function ModelManagement() {
                 }
                 className="mb-4"
               />
-              <Button
-                variant="outline"
-                className="mr-2"
-                onClick={() => setEditModelName(null)} // Close the edit form
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="outline"
-                className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setEditModelName(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="outline"
+                  className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
                           dark:bg-[#FFFBFB] dark:text-[#141414] dark:hover:bg-[#212121] dark:hover:border-[#212121] dark:hover:text-[#FFFBFB]
                           transition-all duration-300"
-                onClick={() => handleEdit(editModelName)}
-              >
-                Update Model
-              </Button>
+                  onClick={() => handleEdit(editModelName)}
+                >
+                  Update Model
+                </Button>
+              </div>
             </div>
           )}
         </div>
