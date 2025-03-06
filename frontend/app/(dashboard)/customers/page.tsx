@@ -108,7 +108,7 @@ const CustomersPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 space-y-8">
+    <div className="container mx-auto p-4 space-y-8 min-h-screen">
       <Card className="dark:bg-[#141414]">
         <CardHeader>
           <CardTitle>Customers</CardTitle>
