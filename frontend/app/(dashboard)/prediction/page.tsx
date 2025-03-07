@@ -11,7 +11,9 @@ import {
   ResponsiveContainer,
   Legend,
   BarChart,
-  Bar
+  Bar,
+  LabelList,
+  Cell
 } from 'recharts';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -30,12 +32,12 @@ import Cookies from 'js-cookie';
 
 export default function PredictionPage() {
   const [formData, setFormData] = useState({
-    'sex': '',
-    'age': '',
-    'side': '',
-    'BW': '',
-    'Ht': '',
-    'BMI': '',
+    sex: '',
+    age: '',
+    side: '',
+    BW: '',
+    Ht: '',
+    BMI: '',
     'IKDC pre': '',
     'Lysholm pre': '',
     'Pre KL grade': '',
@@ -225,7 +227,9 @@ export default function PredictionPage() {
             </SelectContent>
           </Select>
           <div className="mt-4 p-4 border rounded-lg bg-gray-100 dark:bg-[#212121]">
-            <div className="font-bold text-lg">Prediction Result (IKDC 2 Year)</div>
+            <div className="font-bold text-lg">
+              Prediction Result (IKDC 2 Year)
+            </div>
             <div className="mt-2 p-2 text-base font-semibold bg-white dark:bg-[#101010] rounded-md shadow">
               {result || 'No prediction yet'}
             </div>
@@ -234,18 +238,49 @@ export default function PredictionPage() {
           {featureImportance.length > 0 && (
             <div className="mt-8 bg-white p-6 rounded-lg shadow dark:bg-[#101010]">
               <h2 className="text-xl font-bold mb-4">Feature Importance</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={featureImportance} layout="vertical">
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart
+                  data={featureImportance}
+                  layout="vertical"
+                  margin={{ top: 10, right: 10, left: -50, bottom: 10 }} // Increased left margin
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="feature" type="category" />
-                  <Tooltip />
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 13 }}
+                    label={{
+                      value: 'Importance',
+                      position: 'insideBottom',
+                      offset: -18
+                    }}
+                  />
+                  <YAxis
+                    dataKey="feature"
+                    type="category"
+                    tick={{ fontSize: 13 }}
+                    width={200} // Adjusted width to accommodate long labels
+                    interval={0}
+                  />
+                  <Tooltip
+                    formatter={(value: number) => value.toFixed(4)}
+                    cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
+                  />
                   <Legend />
-                  <Bar dataKey="importance" fill="#8884d8" />
+                  <Bar dataKey="importance" fill="#8884d8" barSize={20}>
+                    {featureImportance.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill="#8884d8" />
+                    ))}
+                    {/* <LabelList
+                      dataKey="importance"
+                      position="inside"
+                      formatter={(value: number) => value.toFixed(4)}
+                    /> */}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
           )}
+
           {/* {predictions && (
             <ResponsiveContainer width="100%" height={300} className="mt-4">
               <LineChart data={predictions}>

@@ -33,10 +33,10 @@ export default function LoginPage() {
 
       if (response.status === 200) {
         Cookies.set('session_token', response.data.access_token, {
-          expires: (1 / 24 / 60) * 30
+          expires: (1 / 24 / 60) * 30 * 5
         }); // 1 day expiration for example
         Cookies.set('csrf_token', response.data.csrf_token, {
-          expires: (1 / 24 / 60) * 30
+          expires: (1 / 24 / 60) * 30 * 5
         });
         toast.success('Login successful');
         await fetchUser();
