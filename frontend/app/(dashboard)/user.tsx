@@ -32,14 +32,14 @@ export function User() {
           {user ? `Hello, ${user?.username}` : 'My Account'}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>Settings</DropdownMenuItem>
-        <DropdownMenuItem>Support</DropdownMenuItem>
+        {/* <DropdownMenuItem>Settings</DropdownMenuItem> */}
+        <DropdownMenuItem>
+          <Link href="/tutorial" className="w-full">Tutorial</Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         {user ? (
           <DropdownMenuItem>
-            <button
-              onClick={logout} // Handle the sign-out process
-            >
+            <button onClick={logout} className="w-full text-left">
               Sign Out
             </button>
           </DropdownMenuItem>
