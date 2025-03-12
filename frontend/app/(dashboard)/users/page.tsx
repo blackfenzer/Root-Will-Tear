@@ -1,7 +1,7 @@
 'use client';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import apiClient from '@/lib/axios';
-import { Customer, CustomerUpdateData } from 'types/customer';
+import { User, UserUpdateData } from 'types/customer';
 import {
   Card,
   CardContent,
@@ -22,59 +22,61 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import Footer from '@/components/footer/page';
+import { toast } from 'react-hot-toast';
 
-const CustomersPage: React.FC = () => {
-  const [customers, setCustomers] = useState<Customer[]>([]);
+const usersPage: React.FC = () => {
+  const [users, setusers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+  const [selecteduser, setSelecteduser] = useState<User | null>(
     null
   );
-  const [formData, setFormData] = useState<CustomerUpdateData>({});
+  const [formData, setFormData] = useState<UserUpdateData>({});
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deleteCustomerId, setDeleteCustomerId] = useState<number | null>(null);
+  const [deleteuserId, setDeleteuserId] = useState<number | null>(null);
 
   // Function to handle deletion after confirmation
   const confirmDelete = async () => {
-    if (deleteCustomerId) {
-      await handleDeleteClick(deleteCustomerId);
+    if (deleteuserId) {
+      await handleDeleteClick(deleteuserId);
       setIsDeleteModalOpen(false);
-      setDeleteCustomerId(null);
+      setDeleteuserId(null);
     }
   };
 
   useEffect(() => {
-    const fetchCustomers = async () => {
+    const fetchusers = async () => {
       try {
-        const response = await apiClient.get<Customer[]>('/api/v1/users/');
-        setCustomers(response.data);
+        const response = await apiClient.get<User[]>('/api/v1/users/');
+        setusers(response.data);
       } catch (err) {
-        console.error('Error fetching customers:', err);
-        setError('Failed to load customers');
+        console.error('Error fetching users:', err);
+        setError('Failed to load users');
       } finally {
         setLoading(false);
       }
     };
-    fetchCustomers();
+    fetchusers();
   }, []);
 
-  const openEditModal = (customer: Customer) => {
-    setSelectedCustomer(customer);
+  const openEditModal = (user: User) => {
+    setSelecteduser(user);
     setFormData({
-      username: customer.username,
+      username: user.username,
       // Avoid pre-filling the password for security reasons
-      role: customer.role,
-      is_active: customer.is_active
+      role: user.role,
+      is_active: user.is_active
     });
   };
 
-  const handleDeleteClick = async (customerId: number) => {
+  const handleDeleteClick = async (userId: number) => {
     try {
-      await apiClient.delete(`/api/v1/users/${customerId}`);
-      setCustomers(customers.filter((cust) => cust.id !== customerId));
+      await apiClient.delete(`/api/v1/users/${userId}`);
+      setusers(users.filter((cust) => cust.id !== userId));
+      toast.success('User deleted successfully');
     } catch (err) {
-      console.error('Error deleting customer:', err);
-      setError('Failed to delete customer');
+      console.error('Error deleting user:', err);
+      setError('Failed to delete user');
     }
   };
 
@@ -88,22 +90,23 @@ const CustomersPage: React.FC = () => {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedCustomer) return;
+    if (!selecteduser) return;
 
     try {
-      const response = await apiClient.put<Customer>(
-        `/api/v1/users/${selectedCustomer.id}`,
+      const response = await apiClient.put<User>(
+        `/api/v1/users/${selecteduser.id}`,
         formData
       );
-      setCustomers((prev) =>
+      setusers((prev) =>
         prev.map((cust) =>
-          cust.id === selectedCustomer.id ? response.data : cust
+          cust.id === selecteduser.id ? response.data : cust
         )
       );
-      setSelectedCustomer(null);
+      setSelecteduser(null);
+      toast.success('User updated successfully');
     } catch (err) {
-      console.error('Error updating customer:', err);
-      setError('Failed to update customer');
+      console.error('Error updating user:', err);
+      setError('Failed to update user');
     }
   };
 
@@ -111,8 +114,8 @@ const CustomersPage: React.FC = () => {
     <div className="container mx-auto p-4 space-y-8 min-h-screen">
       <Card className="dark:bg-[#141414]">
         <CardHeader>
-          <CardTitle>Customers</CardTitle>
-          <CardDescription>View, update, and delete customers.</CardDescription>
+          <CardTitle>Users</CardTitle>
+          <CardDescription>View, update, and delete users.</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -120,16 +123,17 @@ const CustomersPage: React.FC = () => {
           ) : error ? (
             <p className="text-red-500">{error}</p>
           ) : (
+            <React.Fragment>
             <ul className="space-y-4">
-              {customers.map((customer) => (
+              {users.map((user) => (
                 <li
-                  key={customer.id}
+                  key={user.id}
                   className="flex flex-col md:flex-row justify-between items-start md:items-center border p-4 rounded"
                 >
                   <div className="flex flex-col md:flex-row gap-3">
-                    <p className="font-bold">Username: {customer.username}</p>
-                    <p>Role: {customer.role}</p>
-                    <p>Status: {customer.is_active ? 'Active' : 'Inactive'}</p>
+                    <p className="font-bold">Username: {user.username}</p>
+                    <p>Role: {user.role}</p>
+                    <p>Status: {user.is_active ? 'Active' : 'Inactive'}</p>
                   </div>
                   <div className="mt-4 md:mt-0 flex flex-row gap-2">
                     {/* Edit Modal using shadcn/ui Dialog */}
@@ -137,16 +141,16 @@ const CustomersPage: React.FC = () => {
                       <DialogTrigger asChild>
                         <Button
                           variant="outline"
-                          onClick={() => openEditModal(customer)}
+                          onClick={() => openEditModal(user)}
                         >
                           Edit
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
-                          <DialogTitle>Edit Customer</DialogTitle>
+                          <DialogTitle>Edit User</DialogTitle>
                           <DialogDescription>
-                            Update the details of the customer.
+                            Update the details of the user.
                           </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleFormSubmit} className="space-y-4">
@@ -236,7 +240,7 @@ const CustomersPage: React.FC = () => {
                           size="sm"
                           variant="destructive"
                           onClick={() => {
-                            setDeleteCustomerId(customer.id);
+                            setDeleteuserId(user.id);
                             setIsDeleteModalOpen(true);
                           }}
                         >
@@ -249,7 +253,7 @@ const CustomersPage: React.FC = () => {
                         </DialogHeader>
                         <p>
                           This action cannot be undone. Are you sure you want to
-                          delete user <strong>{customer.username}</strong>?
+                          delete user <strong>{user.username}</strong>?
                         </p>
                         <DialogFooter>
                           <Button
@@ -260,7 +264,7 @@ const CustomersPage: React.FC = () => {
                           </Button>
                           <Button
                             variant="destructive"
-                            onClick={() => handleDeleteClick(customer.id)}
+                            onClick={() => handleDeleteClick(user.id)}
                           >
                             Delete
                           </Button>
@@ -271,6 +275,7 @@ const CustomersPage: React.FC = () => {
                 </li>
               ))}
             </ul>
+            </React.Fragment>
           )}
         </CardContent>
       </Card>
@@ -279,4 +284,4 @@ const CustomersPage: React.FC = () => {
   );
 };
 
-export default CustomersPage;
+export default usersPage;

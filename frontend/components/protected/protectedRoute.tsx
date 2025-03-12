@@ -7,7 +7,7 @@ import Cookies from 'js-cookie';
 import Loading from 'app/loading';
 
 const PUBLIC_PATHS = ['/', '/login', '/register'];
-const ADMIN_PROTECTED_PATH = '/customers';
+const ADMIN_PROTECTED_PATH = '/users';
 const AUTH_PROTECTED_PATHS = ['/machine', '/prediction']; // Paths that require authentication
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {

@@ -1,4 +1,4 @@
-export interface Customer {
+export interface User {
   id: number;
   username: string;
   password: string;
@@ -6,7 +6,7 @@ export interface Customer {
   is_active: boolean;
 }
 
-export interface CustomerUpdateData {
+export interface UserUpdateData {
   username?: string;
   password?: string;
   role?: string;

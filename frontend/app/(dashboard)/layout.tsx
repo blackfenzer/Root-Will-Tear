@@ -123,13 +123,13 @@ function MobileNav() {
           </Link>
 
           <Link
-            href="/customers"
+            href="/users"
             className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-            aria-label="View Customers"
+            aria-label="View Users"
             onClick={handleLinkClick} // Close the menu when clicked
           >
             <Users2 className="h-5 w-5" />
-            Customers
+            Users
           </Link>
 
           {/* Optionally, if you decide to add other menu items later */}

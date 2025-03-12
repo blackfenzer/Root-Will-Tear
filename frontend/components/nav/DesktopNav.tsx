@@ -50,7 +50,7 @@ export default function DesktopNav() {
         </NavItem>
 
         {user?.role === 'admin' && (
-          <NavItem href="/customers" label="Customers">
+          <NavItem href="/users" label="Users">
             <Users2 className="h-5 w-5" />
           </NavItem>
         )}
