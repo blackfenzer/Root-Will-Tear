@@ -27,6 +27,7 @@ export default async function ProductsPage(props: {
             height={500}
             alt="Model Training Tutorial"
             className="rounded-lg"
+            priority
           />
         </div>
   
@@ -41,6 +42,7 @@ export default async function ProductsPage(props: {
             height={500}
             alt="Score Prediction Tutorial"
             className="rounded-lg"
+            priority
           />
         </div>
       </div>

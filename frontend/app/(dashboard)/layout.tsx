@@ -35,7 +35,7 @@ import Image from 'next/image';
 import { ModeToggle } from '@/components/theme/mode';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import DesktopNav from '@/components/nav/DesktopNav';
-import { useState } from 'react'; 
+import { useState } from 'react';
 // import { useUser } from 'context/UserContext';
 
 export default function DashboardLayout({
@@ -46,6 +46,12 @@ export default function DashboardLayout({
   return (
     <Providers>
       <main className="flex min-h-screen w-full flex-col bg-gradient-to-b from-[#FFFBFB] to-[#FAFAFF] dark:from-[#1A1A1A] dark:to-[#141414]">
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
         <DesktopNav />
         <div className="flex flex-col sm:gap-4 sm:pt-4 sm:pl-14">
           <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">

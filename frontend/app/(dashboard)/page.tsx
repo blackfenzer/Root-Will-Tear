@@ -95,6 +95,7 @@ export default async function ProductsPage(props: {
               height={500}
               alt="Meniscus Root Tear"
               className="rounded-lg"
+              priority
             />
           </div>
         </div>

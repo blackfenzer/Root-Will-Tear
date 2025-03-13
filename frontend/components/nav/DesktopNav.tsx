@@ -34,6 +34,7 @@ export default function DesktopNav() {
             height={36}
             alt="Logo"
             className="overflow-hidden rounded-full object-cover"
+            priority
           />
         </Link>
 
