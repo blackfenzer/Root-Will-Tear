@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, ChangeEvent } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +25,6 @@ import {
   DialogTitle,
   DialogFooter
 } from '@/components/ui/dialog';
-import { is } from 'drizzle-orm';
 
 const Spinner = () => (
   <div className="animate-spin w-5 h-5 border-2 border-gray-300 border-t-2 border-t-blue-500 rounded-full"></div>
@@ -51,6 +51,50 @@ interface AllModelUpdate {
   is_active?: boolean;
   csv_id?: number;
 }
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 12
+    }
+  }
+};
+
+const formVariants = {
+  hidden: { x: 50, opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 15
+    }
+  },
+  exit: {
+    x: 50,
+    opacity: 0,
+    transition: {
+      duration: 0.3
+    }
+  }
+};
 
 export default function ModelManagement() {
   // State for fetched models
@@ -217,273 +261,380 @@ export default function ModelManagement() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <motion.div
+      className="flex flex-col min-h-screen"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="p-4 md:p-8">
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <Button
-            className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
-                       dark:bg-[#FFFBFB] dark:text-[#141414] dark:hover:bg-[#212121] dark:hover:border-[#212121] dark:hover:text-[#FFFBFB]
-                       transition-all duration-300"
-            variant={'outline'}
-            onClick={() => {
-              setEditModelName(null);
-              setNewModel({
-                name: '',
-                model_architecture: '',
-                final_loss: 0,
-                model_path: '',
-                bentoml_tag: '',
-                is_active: true
-              });
-              setTrainingDescription('');
-              setTrainingVersion('');
-              setFile(null);
-              setIsCreating(true);
-            }}
-          >
-            Create New Model
-          </Button>
-        </div>
+        <motion.div
+          className="flex flex-col md:flex-row gap-4 mb-8"
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{
+            duration: 0.5,
+            type: 'spring',
+            stiffness: 100
+          }}
+        >
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
+                         dark:bg-[#FFFBFB] dark:text-[#141414] dark:hover:bg-[#212121] dark:hover:border-[#212121] dark:hover:text-[#FFFBFB]
+                         transition-all duration-300"
+              variant={'outline'}
+              onClick={() => {
+                setEditModelName(null);
+                setNewModel({
+                  name: '',
+                  model_architecture: '',
+                  final_loss: 0,
+                  model_path: '',
+                  bentoml_tag: '',
+                  is_active: true
+                });
+                setTrainingDescription('');
+                setTrainingVersion('');
+                setFile(null);
+                setIsCreating(true);
+              }}
+            >
+              Create New Model
+            </Button>
+          </motion.div>
+        </motion.div>
 
         <div className="flex flex-col md:flex-row gap-8">
           {/* Left Column: List of Models */}
-          <div className="w-full md:w-1/2">
-            <Input
-              placeholder="Filter"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="mb-4"
-            />
-            <div className="space-y-4">
-              {filteredModels.map((model, index) => (
-                <Card key={index}>
-                  <CardContent className="p-4 dark:bg-[#141414]">
-                    <div className="flex-1">
-                      <strong className="block">{model.name}</strong>
-                      <div>{`Created: ${model.created_at}`}</div>
-                      <div>{`Architecture: ${model.model_architecture}`}</div>
-                      <div>{`RMSE: ${model.final_loss}`}</div>
-                      <div>{`BentoML Tag: ${model.bentoml_tag}`}</div>
-                    </div>
-                    <div className="flex flex-col gap-2 mt-2">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {user?.role === 'admin' && (
-                          <div className="flex flex-col sm:flex-row gap-2 col-span-1 sm:col-span-2">
-                            <Button
-                              className="w-full bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]
-                                        dark:bg-[#212121] dark:border-[#141414] dark:text-[#FFFBFB] dark:hover:bg-[#FFFBFB] dark:hover:text-[#212121]
-                                        transition-all duration-300"
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setIsCreating(false);
-                                setEditModelName(model.name);
-                                setNewModel({
-                                  name: model.name,
-                                  model_architecture: model.model_architecture,
-                                  final_loss: model.final_loss || 0,
-                                  model_path: model.model_path,
-                                  bentoml_tag: model.bentoml_tag,
-                                  is_active: model.is_active
-                                });
-                              }}
-                            >
-                              Edit
-                            </Button>
-                            <Dialog
-                              open={isDeleteModalOpen}
-                              onOpenChange={setIsDeleteModalOpen}
-                            >
-                              <DialogTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  className="w-full transition-all duration-300"
-                                  onClick={() => {
-                                    setDeleteModelName(model.name);
-                                    setIsDeleteModalOpen(true);
-                                  }}
+          <motion.div
+            className="w-full md:w-1/2"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div variants={itemVariants}>
+              <Input
+                placeholder="Filter"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                className="mb-4"
+              />
+            </motion.div>
+            <motion.div className="space-y-4" variants={containerVariants}>
+              <AnimatePresence>
+                {filteredModels.map((model, index) => (
+                  <motion.div
+                    key={index}
+                    variants={itemVariants}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 100,
+                      damping: 15,
+                      delay: index * 0.05
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    <Card>
+                      <CardContent className="p-4 dark:bg-[#141414]">
+                        <div className="flex-1">
+                          <strong className="block">{model.name}</strong>
+                          <div>{`Created: ${model.created_at}`}</div>
+                          <div>{`Architecture: ${model.model_architecture}`}</div>
+                          <div>{`RMSE: ${model.final_loss}`}</div>
+                          <div>{`BentoML Tag: ${model.bentoml_tag}`}</div>
+                        </div>
+                        <div className="flex flex-col gap-2 mt-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {user?.role === 'admin' && (
+                              <div className="flex flex-col sm:flex-row gap-2 col-span-1 sm:col-span-2 ">
+                                <motion.div
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  className="w-full sm:w-1/2"
                                 >
-                                  Delete
+                                  <Button
+                                    className="w-full bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]
+                                              dark:bg-[#212121] dark:border-[#141414] dark:text-[#FFFBFB] dark:hover:bg-[#FFFBFB] dark:hover:text-[#212121]
+                                              transition-all duration-300"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setIsCreating(false);
+                                      setEditModelName(model.name);
+                                      setNewModel({
+                                        name: model.name,
+                                        model_architecture:
+                                          model.model_architecture,
+                                        final_loss: model.final_loss || 0,
+                                        model_path: model.model_path,
+                                        bentoml_tag: model.bentoml_tag,
+                                        is_active: model.is_active
+                                      });
+                                    }}
+                                  >
+                                    Edit
+                                  </Button>
+                                </motion.div>
+                                <Dialog
+                                  open={isDeleteModalOpen}
+                                  onOpenChange={setIsDeleteModalOpen}
+                                >
+                                  <DialogTrigger asChild>
+                                    <motion.div
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      className="w-full sm:w-1/2"
+                                    >
+                                      <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        className="w-full transition-all duration-300"
+                                        onClick={() => {
+                                          setDeleteModelName(model.name);
+                                          setIsDeleteModalOpen(true);
+                                        }}
+                                      >
+                                        Delete
+                                      </Button>
+                                    </motion.div>
+                                  </DialogTrigger>
+                                  <DialogContent>
+                                    <DialogHeader>
+                                      <DialogTitle>Are you sure?</DialogTitle>
+                                    </DialogHeader>
+                                    <p>
+                                      This action cannot be undone. Are you sure
+                                      you want to delete model{' '}
+                                      <strong>{deleteModelName}</strong>?
+                                    </p>
+                                    <DialogFooter>
+                                      <Button
+                                        variant="secondary"
+                                        onClick={() =>
+                                          setIsDeleteModalOpen(false)
+                                        }
+                                      >
+                                        Cancel
+                                      </Button>
+                                      <Button
+                                        variant="destructive"
+                                        onClick={confirmDelete}
+                                      >
+                                        Confirm
+                                      </Button>
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
+                              </div>
+                            )}
+                            {model.csv_id && (
+                              <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="col-span-1 sm:col-span-2"
+                              >
+                                <Button
+                                  className="w-full bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]
+                                            dark:bg-[#212121] dark:border-[#141414] dark:text-[#FFFBFB] dark:hover:bg-[#FFFBFB] dark:hover:text-[#212121]
+                                            transition-all duration-300"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    handleDownloadCSV(model.csv_id as number)
+                                  }
+                                >
+                                  Download CSV
                                 </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Are you sure?</DialogTitle>
-                                </DialogHeader>
-                                <p>
-                                  This action cannot be undone. Are you sure you
-                                  want to delete model{' '}
-                                  <strong>{deleteModelName}</strong>?
-                                </p>
-                                <DialogFooter>
-                                  <Button
-                                    variant="secondary"
-                                    onClick={() => setIsDeleteModalOpen(false)}
-                                  >
-                                    Cancel
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    onClick={confirmDelete}
-                                  >
-                                    Confirm
-                                  </Button>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
+                              </motion.div>
+                            )}
                           </div>
-                        )}
-                        {model.csv_id && (
-                          <Button
-                            className="w-full col-span-1 sm:col-span-2 bg-[#FFFBFB] border-[#493DB1] text-[#493DB1] hover:bg-[#493DB1] hover:text-[#FFFBFB]
-                                      dark:bg-[#212121] dark:border-[#141414] dark:text-[#FFFBFB] dark:hover:bg-[#FFFBFB] dark:hover:text-[#212121]
-                                      transition-all duration-300"
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              handleDownloadCSV(model.csv_id as number)
-                            }
-                          >
-                            Download CSV
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          </motion.div>
 
           {/* Right Column: Create/Edit Form */}
-          {isCreating && (
-            <div className="w-full md:w-1/2">
-              <h2 className="text-xl font-bold mb-4">Create New Model</h2>
-              <Label>Name</Label>
-              <Input
-                value={newModel.name}
-                onChange={(e) =>
-                  setNewModel({ ...newModel, name: e.target.value })
-                }
-                placeholder="Model Name"
-                className="mb-4"
-              />
-              <Label>Upload CSV for Training</Label>
-              <Input
-                type="file"
-                accept=".csv"
-                onChange={handleFileChange}
-                className="mb-4"
-              />
-              <Label>Training Description</Label>
-              <Input
-                value={trainingDescription}
-                onChange={(e) => setTrainingDescription(e.target.value)}
-                placeholder="Training Description"
-                className="mb-4"
-              />
-              <Label>Training Version</Label>
-              <Input
-                value={trainingVersion}
-                onChange={(e) => setTrainingVersion(e.target.value)}
-                placeholder="Training Version"
-                className="mb-4"
-              />
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Button variant="outline" onClick={() => setIsCreating(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  variant="outline"
-                  className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
-            dark:bg-[#FFFBFB] dark:text-[#141414] dark:hover:bg-[#212121] dark:hover:border-[#212121] dark:hover:text-[#FFFBFB]
-            transition-all duration-300"
-                  onClick={handleCreate}
-                >
-                  {isClick ? <Spinner /> : 'Add Model'}
-                </Button>
-              </div>
-            </div>
-          )}
+          <AnimatePresence mode="wait">
+            {isCreating && (
+              <motion.div
+                key="create-form"
+                className="w-full md:w-1/2"
+                variants={formVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                <h2 className="text-xl font-bold mb-4">Create New Model</h2>
+                <Label>Name</Label>
+                <Input
+                  value={newModel.name}
+                  onChange={(e) =>
+                    setNewModel({ ...newModel, name: e.target.value })
+                  }
+                  placeholder="Model Name"
+                  className="mb-4"
+                />
+                <Label>Upload CSV for Training</Label>
+                <Input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileChange}
+                  className="mb-4"
+                />
+                <Label>Training Description</Label>
+                <Input
+                  value={trainingDescription}
+                  onChange={(e) => setTrainingDescription(e.target.value)}
+                  placeholder="Training Description"
+                  className="mb-4"
+                />
+                <Label>Training Version</Label>
+                <Input
+                  value={trainingVersion}
+                  onChange={(e) => setTrainingVersion(e.target.value)}
+                  placeholder="Training Version"
+                  className="mb-4"
+                />
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsCreating(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      variant="outline"
+                      className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
+                      dark:bg-[#FFFBFB] dark:text-[#141414] dark:hover:bg-[#212121] dark:hover:border-[#212121] dark:hover:text-[#FFFBFB]
+                      transition-all duration-300"
+                      onClick={handleCreate}
+                    >
+                      {isClick ? <Spinner /> : 'Add Model'}
+                    </Button>
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
 
-          {editModelName !== null && (
-            <div className="w-full md:w-1/2">
-              <h2 className="text-xl font-bold mb-4">Edit Model</h2>
-              <Label>Model Architecture</Label>
-              <Input
-                value={newModel.model_architecture}
-                onChange={(e) =>
-                  setNewModel({
-                    ...newModel,
-                    model_architecture: e.target.value
-                  })
-                }
-                placeholder="Model Architecture"
-                className="mb-4"
-              />
-              <Label>Final Loss</Label>
-              <Input
-                type="number"
-                value={newModel.final_loss?.toString() || '0'}
-                onChange={(e) =>
-                  setNewModel({
-                    ...newModel,
-                    final_loss: Number(e.target.value)
-                  })
-                }
-                placeholder="Final Loss"
-                className="mb-4"
-              />
-              <Label>Model Path</Label>
-              <Input
-                value={newModel.model_path}
-                onChange={(e) =>
-                  setNewModel({ ...newModel, model_path: e.target.value })
-                }
-                placeholder="Model Path"
-                className="mb-4"
-              />
-              <Label>BentoML Tag</Label>
-              <Input
-                value={newModel.bentoml_tag}
-                onChange={(e) =>
-                  setNewModel({ ...newModel, bentoml_tag: e.target.value })
-                }
-                placeholder="BentoML Tag"
-                className="mb-4"
-              />
-              <Label>Is Active</Label>
-              <Input
-                type="checkbox"
-                checked={newModel.is_active || false}
-                onChange={(e) =>
-                  setNewModel({ ...newModel, is_active: e.target.checked })
-                }
-                className="mb-4"
-              />
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setEditModelName(null)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="outline"
-                  className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
-                          dark:bg-[#FFFBFB] dark:text-[#141414] dark:hover:bg-[#212121] dark:hover:border-[#212121] dark:hover:text-[#FFFBFB]
-                          transition-all duration-300"
-                  onClick={() => handleEdit(editModelName)}
-                >
-                  Update Model
-                </Button>
-              </div>
-            </div>
-          )}
+            {editModelName !== null && (
+              <motion.div
+                key="edit-form"
+                className="w-full md:w-1/2"
+                variants={formVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                <h2 className="text-xl font-bold mb-4">Edit Model</h2>
+                <Label>Model Architecture</Label>
+                <Input
+                  value={newModel.model_architecture}
+                  onChange={(e) =>
+                    setNewModel({
+                      ...newModel,
+                      model_architecture: e.target.value
+                    })
+                  }
+                  placeholder="Model Architecture"
+                  className="mb-4"
+                />
+                <Label>Final Loss</Label>
+                <Input
+                  type="number"
+                  value={newModel.final_loss?.toString() || '0'}
+                  onChange={(e) =>
+                    setNewModel({
+                      ...newModel,
+                      final_loss: Number(e.target.value)
+                    })
+                  }
+                  placeholder="Final Loss"
+                  className="mb-4"
+                />
+                <Label>Model Path</Label>
+                <Input
+                  value={newModel.model_path}
+                  onChange={(e) =>
+                    setNewModel({ ...newModel, model_path: e.target.value })
+                  }
+                  placeholder="Model Path"
+                  className="mb-4"
+                />
+                <Label>BentoML Tag</Label>
+                <Input
+                  value={newModel.bentoml_tag}
+                  onChange={(e) =>
+                    setNewModel({ ...newModel, bentoml_tag: e.target.value })
+                  }
+                  placeholder="BentoML Tag"
+                  className="mb-4"
+                />
+                <Label>Is Active</Label>
+                <Input
+                  type="checkbox"
+                  checked={newModel.is_active || false}
+                  onChange={(e) =>
+                    setNewModel({ ...newModel, is_active: e.target.checked })
+                  }
+                  className="mb-4"
+                />
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      variant="outline"
+                      onClick={() => setEditModelName(null)}
+                    >
+                      Cancel
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      variant="outline"
+                      className="bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
+                                dark:bg-[#FFFBFB] dark:text-[#141414] dark:hover:bg-[#212121] dark:hover:border-[#212121] dark:hover:text-[#FFFBFB]
+                                transition-all duration-300"
+                      onClick={() => handleEdit(editModelName)}
+                    >
+                      Update Model
+                    </Button>
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-      <Footer />
-    </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <Footer />
+      </motion.div>
+    </motion.div>
   );
 }

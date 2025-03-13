@@ -6,7 +6,7 @@ import {
   Line,
   XAxis,
   YAxis,
-  Tooltip,
+  Tooltip as RechartTooltip,
   CartesianGrid,
   ResponsiveContainer,
   Legend,
@@ -29,6 +29,8 @@ import { toast } from 'react-hot-toast';
 import apiClient from '@/lib/axios';
 import { Model } from 'types/model';
 import Cookies from 'js-cookie';
+import * as RadixTooltip from '@radix-ui/react-tooltip';
+import { motion } from 'framer-motion';
 
 export default function PredictionPage() {
   const [formData, setFormData] = useState({
@@ -58,6 +60,27 @@ export default function PredictionPage() {
   const [featureImportance, setFeatureImportance] = useState<
     { feature: string; importance: number }[]
   >([]);
+
+  // Tooltip descriptions for each field
+  const tooltipDescriptions = {
+    sex: 'Patient sex: Enter 0 for male, 1 for female',
+    age: 'Patient age in years',
+    side: 'Affected side: Enter 0 for left, 1 for right',
+    BW: 'Body weight in kilograms',
+    Ht: 'Height in centimeters',
+    BMI: 'Body Mass Index calculated as weight(kg)/height(m)²',
+    'IKDC pre':
+      'Pre-operative International Knee Documentation Committee score (0-100)',
+    'Lysholm pre': 'Pre-operative Lysholm knee score (0-100)',
+    'Pre KL grade': 'Pre-operative Kellgren-Lawrence grade (0-4)',
+    'MM extrusion pre': 'Medial meniscus extrusion in millimeters',
+    'MM gap': 'Medial meniscus gap in millimeters',
+    'Degenerative meniscus': 'Enter 0 for no, 1 for yes',
+    'medial femoral condyle': 'Cartilage status score (0-4)',
+    'medial tibial condyle': 'Cartilage status score (0-4)',
+    'lateral femoral condyle': 'Cartilage status score (0-4)',
+    'lateral tibial condyle': 'Cartilage status score (0-4)'
+  };
 
   useEffect(() => {
     const fetchModels = async () => {
@@ -129,16 +152,91 @@ export default function PredictionPage() {
     }
   };
 
+  // Input field with tooltip component
+  const InputWithTooltip = ({
+    name,
+    value,
+    onChange,
+    index
+  }: {
+    name: keyof typeof formData;
+    value: string;
+    onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+    index: number;
+  }) => (
+    <motion.div
+      // initial={{ opacity: 0, y: 0 }}
+      // animate={{ opacity: 1, y: 0 }}
+      // transition={{
+      //   delay: index * 0.05,
+      //   duration: 0.3
+      // }}
+      whileHover={{ scale: 1.02 }}
+    >
+      <RadixTooltip.Provider delayDuration={300}>
+        <RadixTooltip.Root>
+          <RadixTooltip.Trigger asChild>
+            <div className="flex items-center justify-between">
+              <span>{name}</span>
+              <Input
+                type="number"
+                name={name}
+                placeholder={name.toUpperCase()}
+                value={value}
+                onChange={onChange}
+                className={'max-w-[65%] flex-grow-1'}
+              />
+            </div>
+          </RadixTooltip.Trigger>
+          <RadixTooltip.Portal>
+            <RadixTooltip.Content
+              className="rounded-md bg-black px-4 py-2 text-sm text-white shadow-md z-50"
+              sideOffset={5}
+            >
+              {tooltipDescriptions[name]}
+              <RadixTooltip.Arrow className="fill-black" />
+            </RadixTooltip.Content>
+          </RadixTooltip.Portal>
+        </RadixTooltip.Root>
+      </RadixTooltip.Provider>
+    </motion.div>
+  );
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <motion.div
+      className="flex flex-col min-h-screen"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       {/* Responsive grid: single column on small screens, two columns on md+ */}
       <div className="p-4 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-white p-6 rounded-lg shadow dark:bg-[#101010]">
-          <h2 className="text-xl font-bold">Input</h2>
+        <motion.div
+          className="bg-white p-6 rounded-lg shadow dark:bg-[#101010]"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          whileHover={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.1)' }}
+        >
+          <motion.h2
+            className="text-xl font-bold"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            Input
+          </motion.h2>
           {/* Responsive grid: stack on mobile and show side-by-side on md+ */}
           <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 mt-4">
             <div>
-              <h3 className="font-semibold mb-2">Patient Information</h3>
+              <motion.h3
+                className="font-semibold mb-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                Patient Information
+              </motion.h3>
               <div className="space-y-3">
                 {(
                   [
@@ -150,25 +248,25 @@ export default function PredictionPage() {
                     'BMI'
                   ] as (keyof typeof formData)[]
                 ).map((key, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between"
-                  >
-                    <span>{key}</span>
-                    <Input
-                      type="number"
-                      name={key}
-                      placeholder={key.toUpperCase()}
-                      value={formData[key]}
-                      onChange={handleChange}
-                      className="w-4/5"
-                    />
-                  </div>
+                  <InputWithTooltip
+                    key={key}
+                    name={key}
+                    value={formData[key]}
+                    onChange={handleChange}
+                    index={index}
+                  />
                 ))}
               </div>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">Pre Score</h3>
+              <motion.h3
+                className="font-semibold mb-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                Pre Score
+              </motion.h3>
               <div className="space-y-3">
                 {(
                   [
@@ -184,130 +282,170 @@ export default function PredictionPage() {
                     'lateral tibial condyle'
                   ] as (keyof typeof formData)[]
                 ).map((key, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between"
-                  >
-                    <span>{key}</span>
-                    <Input
-                      type="number"
-                      name={key}
-                      placeholder={key.toUpperCase()}
-                      value={formData[key]}
-                      onChange={handleChange}
-                      className="w-2/3"
-                    />
-                  </div>
+                  <InputWithTooltip
+                    key={key}
+                    name={key}
+                    value={formData[key]}
+                    onChange={handleChange}
+                    index={index}
+                  />
                 ))}
               </div>
             </div>
           </div>
-          <Button
-            onClick={handlePredict}
-            disabled={isLoading}
-            className="mt-4 w-full bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
-                      dark:bg-[#FFFBFB] dark:border-[#141414] dark:text-[#141414] dark:hover:bg-[#212121] dark:hover:text-[#FFFBFB]"
-            variant="outline"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
           >
-            {isLoading ? 'Predicting...' : 'Confirm'}
-          </Button>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow dark:bg-[#101010]">
-          <h2 className="text-xl font-bold">Prediction</h2>
-          <Select onValueChange={setSelectedModel} value={selectedModel}>
-            <SelectTrigger className="w-full mt-2">
-              <SelectValue placeholder="Select Model" />
-            </SelectTrigger>
-            <SelectContent>
-              {models.map((model) => (
-                <SelectItem key={model.id} value={model.name}>
-                  {model.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="mt-4 p-4 border rounded-lg bg-gray-100 dark:bg-[#212121]">
+            <Button
+              onClick={handlePredict}
+              disabled={isLoading}
+              className="mt-4 w-full bg-[#493DB1] text-[#FFFBFB] hover:bg-[#FFFBFB] hover:border-[#493DB1] hover:text-[#493DB1]
+                        dark:bg-[#FFFBFB] dark:border-[#141414] dark:text-[#141414] dark:hover:bg-[#212121] dark:hover:text-[#FFFBFB]"
+              variant="outline"
+            >
+              {isLoading ? (
+                <motion.span
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                >
+                  Predicting...
+                </motion.span>
+              ) : (
+                'Confirm'
+              )}
+            </Button>
+          </motion.div>
+        </motion.div>
+        <motion.div
+          className="bg-white p-6 rounded-lg shadow dark:bg-[#101010]"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          whileHover={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.1)' }}
+        >
+          <motion.h2
+            className="text-xl font-bold"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            Prediction
+          </motion.h2>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            whileHover={{ scale: 1.02 }}
+          >
+            <Select onValueChange={setSelectedModel} value={selectedModel}>
+              <SelectTrigger className="w-full mt-2">
+                <SelectValue placeholder="Select Model" />
+              </SelectTrigger>
+              <SelectContent>
+                {models.map((model) => (
+                  <SelectItem key={model.id} value={model.name}>
+                    {model.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </motion.div>
+          <motion.div
+            className="mt-4 p-4 border rounded-lg bg-gray-100 dark:bg-[#212121]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+          >
             <div className="font-bold text-lg">
               Prediction Result (IKDC 2 Year)
             </div>
-            <div className="mt-2 p-2 text-base font-semibold bg-white dark:bg-[#101010] rounded-md shadow">
+            {/* Using key to trigger re-render animation when result changes */}
+            <motion.div
+              key={result || 'no-result'}
+              className="mt-2 p-2 text-base font-semibold bg-white dark:bg-[#101010] rounded-md shadow"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{
+                type: 'spring',
+                stiffness: 300,
+                damping: 25
+              }}
+            >
               {result || 'No prediction yet'}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {featureImportance.length > 0 && (
-            <div className="mt-8 bg-white p-6 rounded-lg shadow dark:bg-[#101010]">
-              <h2 className="text-xl font-bold mb-4">Feature Importance</h2>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart
-                  data={featureImportance}
-                  layout="vertical"
-                  margin={{ top: 10, right: 10, left: -50, bottom: 10 }} // Increased left margin
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    type="number"
-                    tick={{ fontSize: 13 }}
-                    label={{
-                      value: 'Importance',
-                      position: 'insideBottom',
-                      offset: -18
-                    }}
-                  />
-                  <YAxis
-                    dataKey="feature"
-                    type="category"
-                    tick={{ fontSize: 13 }}
-                    width={200} // Adjusted width to accommodate long labels
-                    interval={0}
-                  />
-                  <Tooltip
-                    formatter={(value: number) => value.toFixed(4)}
-                    cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
-                  />
-                  <Legend />
-                  <Bar dataKey="importance" fill="#8884d8" barSize={20}>
-                    {featureImportance.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill="#8884d8" />
-                    ))}
-                    {/* <LabelList
-                      dataKey="importance"
-                      position="inside"
+            <motion.div
+              className="mt-8 bg-white p-6 rounded-lg shadow dark:bg-[#101010]"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <motion.h2
+                className="text-xl font-bold mb-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                Feature Importance
+              </motion.h2>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4, type: 'spring' }}
+              >
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart
+                    data={featureImportance}
+                    layout="vertical"
+                    margin={{ top: 10, right: 10, left: -50, bottom: 10 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      type="number"
+                      tick={{ fontSize: 13 }}
+                      label={{
+                        value: 'Importance',
+                        position: 'insideBottom',
+                        offset: -18
+                      }}
+                    />
+                    <YAxis
+                      dataKey="feature"
+                      type="category"
+                      tick={{ fontSize: 13 }}
+                      width={200}
+                      interval={0}
+                    />
+                    <RechartTooltip
                       formatter={(value: number) => value.toFixed(4)}
-                    /> */}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+                      cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
+                    />
+                    <Legend />
+                    <Bar
+                      dataKey="importance"
+                      fill="#8884d8"
+                      barSize={20}
+                      animationDuration={1500}
+                    >
+                      {featureImportance.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill="#8884d8" />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </motion.div>
+            </motion.div>
           )}
-
-          {/* {predictions && (
-            <ResponsiveContainer width="100%" height={300} className="mt-4">
-              <LineChart data={predictions}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="IKDC"
-                  stroke="#8884d8"
-                  strokeWidth={2}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="Lysholm"
-                  stroke="#82ca9d"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          )} */}
-        </div>
+        </motion.div>
       </div>
 
       <Footer />
-    </div>
+    </motion.div>
   );
 }
