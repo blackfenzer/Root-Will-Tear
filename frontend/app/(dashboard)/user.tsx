@@ -46,10 +46,10 @@ export function User() {
         ) : (
           <>
             <DropdownMenuItem>
-              <Link href="/login">Sign In</Link>
+              <Link href="/login" className="w-full">Sign In</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Link href="/register">Sign Up</Link>
+              <Link href="/register" className="w-full">Sign Up</Link>
             </DropdownMenuItem>
           </>
         )}

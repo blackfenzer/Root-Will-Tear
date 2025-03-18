@@ -11,7 +11,7 @@ import Cookies from 'js-cookie';
 import Footer from '@/components/footer/page';
 import { toast } from 'react-hot-toast';
 import { useUser } from 'context/UserContext';
-
+import apiClient from '@/lib/axios';
 export default function LoginPage() {
   const [error, setError] = useState('');
   const router = useRouter();
@@ -27,8 +27,19 @@ export default function LoginPage() {
     setError('');
 
     try {
+      // const response = await axios.post(
+      //   `http://localhost:8000/api/v1/login?username=${formData.username}&password=${formData.password}`
+      // );
+      const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
       const response = await axios.post(
-        `http://localhost:8000/api/v1/login?username=${formData.username}&password=${formData.password}`
+        `${apiUrl}/api/v1/login`,
+        {}, // Empty body if using query params
+        {
+          params: {
+            username: formData.username,
+            password: formData.password
+          }
+        }
       );
 
       if (response.status === 200) {
