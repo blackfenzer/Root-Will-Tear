@@ -34,9 +34,9 @@ export default function LoginPage() {
           username: formData.username,
           password: formData.password
         }, // Empty body if using query params
-        {
-          withCredentials: false
-        }
+        // {
+        //   withCredentials: true
+        // }
       );
 
       if (response.status === 200) {

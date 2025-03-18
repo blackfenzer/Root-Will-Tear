@@ -39,7 +39,6 @@ export default function PredictionPage() {
     side: '',
     BW: '',
     Ht: '',
-    BMI: '',
     'IKDC pre': '',
     'Lysholm pre': '',
     'Pre KL grade': '',
@@ -48,8 +47,7 @@ export default function PredictionPage() {
     'Degenerative meniscus': '',
     'medial femoral condyle': '',
     'medial tibial condyle': '',
-    'lateral femoral condyle': '',
-    'lateral tibial condyle': ''
+    'lateral femoral condyle': ''
   });
 
   const [models, setModels] = useState<Model[]>([]);
@@ -68,7 +66,7 @@ export default function PredictionPage() {
     side: 'Affected side: Enter 0 for left, 1 for right',
     BW: 'Body weight in kilograms',
     Ht: 'Height in centimeters',
-    BMI: 'Body Mass Index calculated as weight(kg)/height(m)²',
+    // BMI: 'Body Mass Index calculated as weight(kg)/height(m)²',
     'IKDC pre':
       'Pre-operative International Knee Documentation Committee score (0-100)',
     'Lysholm pre': 'Pre-operative Lysholm knee score (0-100)',
@@ -78,8 +76,8 @@ export default function PredictionPage() {
     'Degenerative meniscus': 'Enter 0 for no, 1 for yes',
     'medial femoral condyle': 'Cartilage status score (0-4)',
     'medial tibial condyle': 'Cartilage status score (0-4)',
-    'lateral femoral condyle': 'Cartilage status score (0-4)',
-    'lateral tibial condyle': 'Cartilage status score (0-4)'
+    'lateral femoral condyle': 'Cartilage status score (0-4)'
+    // 'lateral tibial condyle': 'Cartilage status score (0-4)'
   };
 
   useEffect(() => {
@@ -112,7 +110,7 @@ export default function PredictionPage() {
     setIsLoading(true);
     try {
       const response = await apiClient.post(
-        `/nn/${selectedModel}`,
+        `/api/v1/nn/${selectedModel}`,
         {
           model_tag: selectedModel,
           input_data: formData
@@ -244,8 +242,7 @@ export default function PredictionPage() {
                     'age',
                     'side',
                     'BW',
-                    'Ht',
-                    'BMI'
+                    'Ht'
                   ] as (keyof typeof formData)[]
                 ).map((key, index) => (
                   <InputWithTooltip
@@ -278,8 +275,7 @@ export default function PredictionPage() {
                     'Degenerative meniscus',
                     'medial femoral condyle',
                     'medial tibial condyle',
-                    'lateral femoral condyle',
-                    'lateral tibial condyle'
+                    'lateral femoral condyle'
                   ] as (keyof typeof formData)[]
                 ).map((key, index) => (
                   <InputWithTooltip
