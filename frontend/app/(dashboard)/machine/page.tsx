@@ -41,6 +41,8 @@ interface AllModelResponse {
   is_active: boolean;
   created_at: string;
   csv_id?: number;
+  r2: number;
+  description: string;
 }
 
 interface AllModelUpdate {
@@ -346,6 +348,8 @@ export default function ModelManagement() {
                           <div>{`Created: ${model.created_at}`}</div>
                           <div>{`Architecture: ${model.model_architecture}`}</div>
                           <div>{`RMSE: ${model.final_loss}`}</div>
+                          <div>{`R2: ${model.r2}`}</div>
+                          <div>{`Description: ${model.description}`}</div>
                           <div>{`BentoML Tag: ${model.bentoml_tag}`}</div>
                         </div>
                         <div className="flex flex-col gap-2 mt-2">
