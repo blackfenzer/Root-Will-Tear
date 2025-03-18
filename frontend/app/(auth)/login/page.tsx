@@ -27,18 +27,15 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // const response = await axios.post(
-      //   `http://localhost:8000/api/v1/login?username=${formData.username}&password=${formData.password}`
-      // );
       const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
       const response = await axios.post(
         `${apiUrl}/api/v1/login`,
-        {}, // Empty body if using query params
         {
-          params: {
-            username: formData.username,
-            password: formData.password
-          }
+          username: formData.username,
+          password: formData.password
+        }, // Empty body if using query params
+        {
+          withCredentials: false
         }
       );
 

@@ -40,7 +40,14 @@ export default function RegisterPage() {
       // Make API call to register the user
       const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
       const response = await axios.post(
-        `${apiUrl}/api/v1/register?username=${formData.username}&password=${formData.password}`
+        `${apiUrl}/api/v1/register`,
+        {
+          username: formData.username,
+          password: formData.password
+        }, // Empty body if using query params
+        {
+          withCredentials: false
+        }
       );
 
       if (response.status === 200) {
