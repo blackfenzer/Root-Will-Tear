@@ -6,7 +6,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast'; // Import toast for notifications
 import { User } from 'types/user';
-
+import apiClient from '@/lib/axios';
 interface UserContextType {
   user: User | null;
   isLoading: boolean;
@@ -32,9 +32,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     try {
-      const response = await axios.get('http://localhost:8000/api/v1/me', {
-        withCredentials: true,
-      });
+      const response = await apiClient.get<User>('/api/v1/me');
+
 
       if (response?.data) {
         setUser({
@@ -54,11 +53,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
-      const response = await axios.post(
-        'http://localhost:8000/api/v1/logout',
-        {},
-        { withCredentials: true }
-      );
+      const response = await apiClient.post('/api/v1/logout');
 
       if (response.status === 200) {
         setUser(null); // Reset user state

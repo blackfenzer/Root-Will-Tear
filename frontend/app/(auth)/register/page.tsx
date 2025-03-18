@@ -1,6 +1,6 @@
 'use client';
 
-import {FormEvent, ChangeEvent, useState } from 'react';
+import { FormEvent, ChangeEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
@@ -38,8 +38,16 @@ export default function RegisterPage() {
 
     try {
       // Make API call to register the user
+      const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
       const response = await axios.post(
-        `http://localhost:8000/api/v1/register?username=${formData.username}&password=${formData.password}`
+        `${apiUrl}/api/v1/register`,
+        {
+          username: formData.username,
+          password: formData.password
+        }, // Empty body if using query params
+        {
+          withCredentials: false
+        }
       );
 
       if (response.status === 200) {
