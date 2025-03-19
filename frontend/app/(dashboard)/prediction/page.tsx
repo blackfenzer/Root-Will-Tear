@@ -2,8 +2,6 @@
 
 import { useState, useEffect, ChangeEvent } from 'react';
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   Tooltip as RechartTooltip,
@@ -12,7 +10,6 @@ import {
   Legend,
   BarChart,
   Bar,
-  LabelList,
   Cell
 } from 'recharts';
 import { Input } from '@/components/ui/input';
@@ -28,7 +25,6 @@ import Footer from '@/components/footer/page';
 import { toast } from 'react-hot-toast';
 import apiClient from '@/lib/axios';
 import { Model } from 'types/model';
-import Cookies from 'js-cookie';
 import * as RadixTooltip from '@radix-ui/react-tooltip';
 import { motion } from 'framer-motion';
 
@@ -52,7 +48,6 @@ export default function PredictionPage() {
 
   const [models, setModels] = useState<Model[]>([]);
   const [selectedModel, setSelectedModel] = useState('');
-  const [predictions, setPredictions] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
   const [featureImportance, setFeatureImportance] = useState<
@@ -66,7 +61,6 @@ export default function PredictionPage() {
     side: 'Affected side: Enter 0 for left, 1 for right',
     BW: 'Body weight in kilograms',
     Ht: 'Height in centimeters',
-    // BMI: 'Body Mass Index calculated as weight(kg)/height(m)²',
     'IKDC pre':
       'Pre-operative International Knee Documentation Committee score (0-100)',
     'Lysholm pre': 'Pre-operative Lysholm knee score (0-100)',
@@ -74,10 +68,9 @@ export default function PredictionPage() {
     'MM extrusion pre': 'Medial meniscus extrusion in millimeters',
     'MM gap': 'Medial meniscus gap in millimeters',
     'Degenerative meniscus': 'Enter 0 for no, 1 for yes',
-    'medial femoral condyle': 'Cartilage status score (0-4)',
-    'medial tibial condyle': 'Cartilage status score (0-4)',
-    'lateral femoral condyle': 'Cartilage status score (0-4)'
-    // 'lateral tibial condyle': 'Cartilage status score (0-4)'
+    'medial femoral condyle': 'Medial femoral condyle status score (0-4)',
+    'medial tibial condyle': 'Medial tibial condyle status score (0-4)',
+    'lateral femoral condyle': 'Lateral femoral condyle status score (0-4)'
   };
 
   useEffect(() => {

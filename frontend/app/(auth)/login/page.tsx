@@ -11,7 +11,6 @@ import Cookies from 'js-cookie';
 import Footer from '@/components/footer/page';
 import { toast } from 'react-hot-toast';
 import { useUser } from 'context/UserContext';
-import apiClient from '@/lib/axios';
 export default function LoginPage() {
   const [error, setError] = useState('');
   const router = useRouter();

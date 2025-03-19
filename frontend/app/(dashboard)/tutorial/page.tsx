@@ -7,10 +7,6 @@ import {
 export default async function ProductsPage(props: {
   searchParams: Promise<{ q: string; offset: string }>;
 }) {
-  const searchParams = await props.searchParams;
-  const search = searchParams.q ?? '';
-  const offset = searchParams.offset ?? 0;
-
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">How to Use</h1>
