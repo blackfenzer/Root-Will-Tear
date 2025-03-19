@@ -1,5 +1,3 @@
-// app/products/page.tsx
-
 import ProductsContent from './HomeContent';
 
 export default async function ProductsPage(props: {
