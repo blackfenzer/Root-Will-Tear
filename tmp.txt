@@ -1,0 +1,9 @@
+docker tag finally-frontend:latest blackfencer/finally-frontend:latest
+docker tag finally-fastapi:latest blackfencer/finally-fastapi:latest
+docker tag finally-bentoml-service:latest blackfencer/finally-bentoml-service:latest
+
+docker push blackfencer/finally-frontend:latest
+docker push blackfencer/finally-fastapi:latest
+docker push blackfencer/finally-bentoml-service:latest
+
+finally-
