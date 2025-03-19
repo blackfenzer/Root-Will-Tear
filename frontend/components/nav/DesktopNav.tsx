@@ -9,7 +9,6 @@ import {
   Wand
 } from 'lucide-react';
 import Link from 'next/link';
-import { DialogTitle } from '@radix-ui/react-dialog'; // Import the necessary components
 import Image from 'next/image';
 import { NavItem } from 'app/(dashboard)/nav-item';
 import {
