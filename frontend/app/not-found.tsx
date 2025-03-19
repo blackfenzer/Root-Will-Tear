@@ -14,14 +14,14 @@ export default function NotFoundPage() {
         </CardHeader>
         <CardContent className="mt-4">
           <p className="text-gray-700 dark:text-gray-300">
-            Oops! The page you’re looking for doesn’t exist.
+            The page you’re looking for doesn’t exist.
           </p>
           <p className="mt-2 text-gray-700 dark:text-gray-300">
             It might have been moved or removed.
           </p>
           <div className="mt-6">
             <Link href="/">
-              <Button>Go Home</Button>
+              <Button>Go to Home</Button>
             </Link>
           </div>
         </CardContent>
