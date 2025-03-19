@@ -72,18 +72,20 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex flex-col px-4 items-center justify-center bg-gray-100 dark:bg-[#141414]">
       <Card className="w-full max-w-md p-4">
         <CardContent>
           <h1 className="text-2xl font-bold mb-4">Register</h1>
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
+              className="bg-gray-100 dark:bg-[#212121]"
               required
               name="username"
               placeholder="Username"
               onChange={handleChange}
             />
             <Input
+              className="bg-gray-100 dark:bg-[#212121]"
               required
               name="password"
               type="password"
