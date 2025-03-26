@@ -130,6 +130,8 @@ export default function ModelManagement() {
   // State for delete confirmation modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteModelName, setDeleteModelName] = useState<string | null>(null);
+  const [modelArchitecture, setModelArchitecture] =
+    useState<string>('NeuralNetwork');
 
   // Function to handle deletion after confirmation
   const confirmDelete = async () => {
@@ -183,8 +185,59 @@ export default function ModelManagement() {
         version: trainingVersion,
         description: trainingDescription
       });
+      const route =
+        modelArchitecture == 'NeuralNetwork'
+          ? 'model_train'
+          : 'model_train_xg_boost';
+
       const response = await apiClient.post<AllModelResponse>(
-        `/api/v1/model_train?${queryParams.toString()}`,
+        `/api/v1/${route}?${queryParams.toString()}`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      // Update models state with the returned model data
+      setModels([...models, response.data]);
+      // Reset form state
+      setNewModel({
+        name: '',
+        model_architecture: '',
+        final_loss: 0,
+        model_path: '',
+        bentoml_tag: '',
+        is_active: true
+      });
+      setTrainingDescription('');
+      setTrainingVersion('');
+      setFile(null);
+      handleModelAdded();
+      toast.success('Model trained and CSV uploaded successfully!');
+    } catch (error) {
+      toast.error('Failed to train model');
+    } finally {
+      setIsCreating(false);
+      setIsClick(false);
+    }
+  };
+
+  // Create new model via training endpoint using XG boost method
+  const handleCreateXGBoost = async () => {
+    if (!file) {
+      toast.error('Please select a CSV file to upload');
+      return;
+    }
+    setIsCreating(true);
+    setIsClick(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      // Build query parameters from form state
+      const queryParams = new URLSearchParams({
+        name: newModel.name || '',
+        version: trainingVersion,
+        description: trainingDescription
+      });
+      const response = await apiClient.post<AllModelResponse>(
+        `/api/v1/model_train_xg_boost?${queryParams.toString()}`,
         formData,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
@@ -508,6 +561,19 @@ export default function ModelManagement() {
                   placeholder="Training Version"
                   className="mb-4"
                 />
+                <Label>Training Method</Label>
+                <Select
+                  onValueChange={setModelArchitecture}
+                  defaultValue="NeuralNetwork"
+                >
+                  <SelectTrigger className="w-[180px] mb-24">
+                    <SelectValue placeholder="Select Model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="NeuralNetwork">NeuralNetwork</SelectItem>
+                    <SelectItem value="XGBoost">XGBoost</SelectItem>
+                  </SelectContent>
+                </Select>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <motion.div
                     whileHover={{ scale: 1.05 }}
