@@ -155,9 +155,7 @@ export default function PredictionPage() {
     onChange: (e: ChangeEvent<HTMLInputElement>) => void;
     index: number;
   }) => (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-    >
+    <motion.div whileHover={{ scale: 1.02 }}>
       <RadixTooltip.Provider delayDuration={300}>
         <RadixTooltip.Root>
           <RadixTooltip.Trigger asChild>
@@ -175,11 +173,11 @@ export default function PredictionPage() {
           </RadixTooltip.Trigger>
           <RadixTooltip.Portal>
             <RadixTooltip.Content
-              className="rounded-md bg-black px-4 py-2 text-sm text-white shadow-md z-50"
+              className="rounded-md bg-gray-200 dark:bg-gray-700 px-4 py-2 text-sm text-black dark:text-white shadow-md z-50"
               sideOffset={5}
             >
               {tooltipDescriptions[name]}
-              <RadixTooltip.Arrow className="fill-black" />
+              <RadixTooltip.Arrow className="fill-gray-200 dark:fill-gray-700" />
             </RadixTooltip.Content>
           </RadixTooltip.Portal>
         </RadixTooltip.Root>

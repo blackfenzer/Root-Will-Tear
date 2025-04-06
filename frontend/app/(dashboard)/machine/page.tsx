@@ -355,7 +355,7 @@ export default function ModelManagement() {
                 setIsCreating(true);
               }}
             >
-              Create New Model
+              Upload New Data and Create New Model
             </Button>
           </motion.div>
         </motion.div>
@@ -530,7 +530,7 @@ export default function ModelManagement() {
                 animate="visible"
                 exit="exit"
               >
-                <h2 className="text-xl font-bold mb-4">Create New Model</h2>
+                <h2 className="text-xl font-bold mb-4">Upload New Data and Create New Model</h2>
                 <Label>Name</Label>
                 <Input
                   value={newModel.name}
@@ -566,7 +566,7 @@ export default function ModelManagement() {
                   onValueChange={setModelArchitecture}
                   defaultValue="NeuralNetwork"
                 >
-                  <SelectTrigger className="w-[180px] mb-24">
+                  <SelectTrigger className="w-[180px] mb-4 bg-background text-foreground border border-input">
                     <SelectValue placeholder="Select Model" />
                   </SelectTrigger>
                   <SelectContent>
