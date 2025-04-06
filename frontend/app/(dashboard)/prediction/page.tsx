@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, ChangeEvent } from 'react';
+import { useState, useEffect, useCallback, ChangeEvent, memo } from 'react';
 import {
   XAxis,
   YAxis,
@@ -28,23 +28,85 @@ import { Model } from 'types/model';
 import * as RadixTooltip from '@radix-ui/react-tooltip';
 import { motion } from 'framer-motion';
 
+const initialFormData = {
+  sex: '',
+  age: '',
+  side: '',
+  BW: '',
+  Ht: '',
+  'IKDC pre': '',
+  'Lysholm pre': '',
+  'Pre KL grade': '',
+  'MM extrusion pre': '',
+  'MM gap': '',
+  'Degenerative meniscus': '',
+  'medial femoral condyle': '',
+  'medial tibial condyle': '',
+  'lateral femoral condyle': ''
+};
+
+const tooltipDescriptions = {
+  sex: 'Patient sex: Enter 0 for male, 1 for female',
+  age: 'Patient age in years',
+  side: 'Affected side: Enter 0 for left, 1 for right',
+  BW: 'Body weight in kilograms',
+  Ht: 'Height in centimeters',
+  'IKDC pre':
+    'Pre-operative International Knee Documentation Committee score (0-100)',
+  'Lysholm pre': 'Pre-operative Lysholm knee score (0-100)',
+  'Pre KL grade': 'Pre-operative Kellgren-Lawrence grade (0-4)',
+  'MM extrusion pre': 'Medial meniscus extrusion in millimeters',
+  'MM gap': 'Medial meniscus gap in millimeters',
+  'Degenerative meniscus': 'Enter 0 for no, 1 for yes',
+  'medial femoral condyle': 'Medial femoral condyle status score (0-4)',
+  'medial tibial condyle': 'Medial tibial condyle status score (0-4)',
+  'lateral femoral condyle': 'Lateral femoral condyle status score (0-4)'
+};
+
+const InputWithTooltip = memo(
+  ({
+    name,
+    value,
+    onChange
+  }: {
+    name: keyof typeof initialFormData;
+    value: string;
+    onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  }) => (
+    <motion.div whileHover={{ scale: 1.02 }}>
+      <RadixTooltip.Provider delayDuration={300}>
+        <RadixTooltip.Root>
+          <RadixTooltip.Trigger asChild>
+            <div className="flex items-center justify-between">
+              <span>{name}</span>
+              <Input
+                type="number"
+                name={name}
+                placeholder={name.toUpperCase()}
+                value={value}
+                onChange={onChange}
+                className="max-w-[65%] flex-grow-1"
+              />
+            </div>
+          </RadixTooltip.Trigger>
+          <RadixTooltip.Portal>
+            <RadixTooltip.Content
+              className="rounded-md bg-gray-200 dark:bg-gray-700 px-4 py-2 text-sm text-black dark:text-white shadow-md z-50"
+              sideOffset={5}
+            >
+              {tooltipDescriptions[name]}
+              <RadixTooltip.Arrow className="fill-gray-200 dark:fill-gray-700" />
+            </RadixTooltip.Content>
+          </RadixTooltip.Portal>
+        </RadixTooltip.Root>
+      </RadixTooltip.Provider>
+    </motion.div>
+  )
+);
+InputWithTooltip.displayName = 'InputWithTooltip';
+
 export default function PredictionPage() {
-  const [formData, setFormData] = useState({
-    sex: '',
-    age: '',
-    side: '',
-    BW: '',
-    Ht: '',
-    'IKDC pre': '',
-    'Lysholm pre': '',
-    'Pre KL grade': '',
-    'MM extrusion pre': '',
-    'MM gap': '',
-    'Degenerative meniscus': '',
-    'medial femoral condyle': '',
-    'medial tibial condyle': '',
-    'lateral femoral condyle': ''
-  });
+  const [formData, setFormData] = useState(initialFormData);
 
   const [models, setModels] = useState<Model[]>([]);
   const [selectedModel, setSelectedModel] = useState('');
@@ -53,25 +115,6 @@ export default function PredictionPage() {
   const [featureImportance, setFeatureImportance] = useState<
     { feature: string; importance: number }[]
   >([]);
-
-  // Tooltip descriptions for each field
-  const tooltipDescriptions = {
-    sex: 'Patient sex: Enter 0 for male, 1 for female',
-    age: 'Patient age in years',
-    side: 'Affected side: Enter 0 for left, 1 for right',
-    BW: 'Body weight in kilograms',
-    Ht: 'Height in centimeters',
-    'IKDC pre':
-      'Pre-operative International Knee Documentation Committee score (0-100)',
-    'Lysholm pre': 'Pre-operative Lysholm knee score (0-100)',
-    'Pre KL grade': 'Pre-operative Kellgren-Lawrence grade (0-4)',
-    'MM extrusion pre': 'Medial meniscus extrusion in millimeters',
-    'MM gap': 'Medial meniscus gap in millimeters',
-    'Degenerative meniscus': 'Enter 0 for no, 1 for yes',
-    'medial femoral condyle': 'Medial femoral condyle status score (0-4)',
-    'medial tibial condyle': 'Medial tibial condyle status score (0-4)',
-    'lateral femoral condyle': 'Lateral femoral condyle status score (0-4)'
-  };
 
   useEffect(() => {
     const fetchModels = async () => {
@@ -86,13 +129,14 @@ export default function PredictionPage() {
     fetchModels();
   }, []);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  // Memoized change handler
+  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: Number(value) // Convert input values to numbers
+      [name]: value
     }));
-  };
+  }, []); // Empty dependency array ensures stable reference
 
   const handlePredict = async () => {
     if (!selectedModel) {
@@ -100,13 +144,20 @@ export default function PredictionPage() {
       return;
     }
 
+    const numericData = Object.fromEntries(
+      Object.entries(formData).map(([key, value]) => [
+        key,
+        value === '' ? 0 : Number(value)
+      ])
+    );
+
     setIsLoading(true);
     try {
       const response = await apiClient.post(
         `/api/v1/nn/${selectedModel}`,
         {
           model_tag: selectedModel,
-          input_data: formData
+          input_data: numericData
         },
         {
           withCredentials: true
@@ -142,48 +193,6 @@ export default function PredictionPage() {
       setIsLoading(false);
     }
   };
-
-  // Input field with tooltip component
-  const InputWithTooltip = ({
-    name,
-    value,
-    onChange,
-    index
-  }: {
-    name: keyof typeof formData;
-    value: string;
-    onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-    index: number;
-  }) => (
-    <motion.div whileHover={{ scale: 1.02 }}>
-      <RadixTooltip.Provider delayDuration={300}>
-        <RadixTooltip.Root>
-          <RadixTooltip.Trigger asChild>
-            <div className="flex items-center justify-between">
-              <span>{name}</span>
-              <Input
-                type="number"
-                name={name}
-                placeholder={name.toUpperCase()}
-                value={value}
-                onChange={onChange}
-                className={'max-w-[65%] flex-grow-1'}
-              />
-            </div>
-          </RadixTooltip.Trigger>
-          <RadixTooltip.Portal>
-            <RadixTooltip.Content
-              className="rounded-md bg-gray-200 dark:bg-gray-700 px-4 py-2 text-sm text-black dark:text-white shadow-md z-50"
-              sideOffset={5}
-            >
-              {tooltipDescriptions[name]}
-              <RadixTooltip.Arrow className="fill-gray-200 dark:fill-gray-700" />
-            </RadixTooltip.Content>
-          </RadixTooltip.Portal>
-        </RadixTooltip.Root>
-      </RadixTooltip.Provider>
-    </motion.div>
-  );
 
   return (
     <motion.div
@@ -232,10 +241,9 @@ export default function PredictionPage() {
                 ).map((key, index) => (
                   <InputWithTooltip
                     key={key}
-                    name={key}
-                    value={formData[key]}
+                    name={key as keyof typeof formData}
+                    value={formData[key as keyof typeof formData]}
                     onChange={handleChange}
-                    index={index}
                   />
                 ))}
               </div>
@@ -265,10 +273,9 @@ export default function PredictionPage() {
                 ).map((key, index) => (
                   <InputWithTooltip
                     key={key}
-                    name={key}
-                    value={formData[key]}
+                    name={key as keyof typeof formData}
+                    value={formData[key as keyof typeof formData]}
                     onChange={handleChange}
-                    index={index}
                   />
                 ))}
               </div>
