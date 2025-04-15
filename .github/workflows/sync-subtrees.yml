@@ -16,6 +16,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
+          access-token: ${{ secrets.GG }}
           fetch-depth: 0 # Needed for full git history
 
       - name: Setup Git
