@@ -2,7 +2,7 @@ import pandas as pd
 import smogn
 import numpy as np
 
-# define column names
+# define column names w
 ALL_COLUMNS = [
     "sex",
     "age",

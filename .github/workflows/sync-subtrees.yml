@@ -4,26 +4,12 @@ on:
   push:
     branches:
       - main # Adjust if your branch is different
+    paths:
+      - "frontend/**"
+      - "backend/**"
 
 jobs:
-  check-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      backend: ${{ steps.filter.outputs.backend }}
-      frontend: ${{ steps.filter.outputs.frontend }}
-    steps:
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            backend:
-              - 'backend/**'
-            frontend:
-              - 'frontend/**'
-
   sync-backend:
-    needs: check-changes
-    if: ${{ needs.check-changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Monorepo
@@ -55,8 +41,6 @@ jobs:
           git push
 
   sync-frontend:
-    needs: check-changes
-    if: ${{ needs.check-changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Monorepo
