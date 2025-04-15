@@ -16,7 +16,6 @@ jobs:
       - name: Checkout repo
         uses: GuillaumeFalourd/clone-github-repo-action@v2.3
         with:
-          repository: blackfenzer/Root-Will-Tear
           token: ${{ secrets.GG }}
           fetch-depth: 0 # Needed for full git history
 
