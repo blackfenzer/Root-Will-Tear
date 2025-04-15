@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: blackfenzer/meniscus-backend-repo
-          token: ${{ secrets.GG }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           path: backend_repo
           fetch-depth: 0
 
@@ -39,6 +39,8 @@ jobs:
           git add --all
           git commit -m "Update backend from monorepo"
           git push
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   sync-frontend:
     runs-on: ubuntu-latest
@@ -55,7 +57,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: blackfenzer/meniscus-frontend-repo
-          token: ${{ secrets.GG }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           path: frontend_repo
           fetch-depth: 0
 
@@ -69,3 +71,5 @@ jobs:
           git add --all
           git commit -m "Update frontend from monorepo"
           git push
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
