@@ -1,7 +1,7 @@
 import csv
 from app.schemas.schemas import PredictRequest, TrainRequest
 
-
+# kuay
 TRAIN_COLUMNS = [
     "sex",
     "age",
