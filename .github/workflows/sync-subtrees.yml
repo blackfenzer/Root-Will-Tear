@@ -14,9 +14,10 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: GuillaumeFalourd/clone-github-repo-action@v2.3
         with:
-          access-token: ${{ secrets.GG }}
+          repository: blackfenzer/Root-Will-Tear
+          token: ${{ secrets.GG }}
           fetch-depth: 0 # Needed for full git history
 
       - name: Setup Git
@@ -27,9 +28,9 @@ jobs:
       - name: Push frontend subtree
         run: |
           git config --unset-all http.https://github.com/.extraheader
-          git subtree push --prefix=frontend https://x-access-token:${{ secrets.GH_PAT }}@github.com/blackfenzer/meniscus-frontend-repo.git main
+          git subtree push --prefix=frontend https://x-access-token:${{ secrets.GG }}@github.com/blackfenzer/meniscus-frontend-repo.git main
 
       - name: Push backend subtree
         run: |
           git config --unset-all http.https://github.com/.extraheader
-          git subtree push --prefix=backend https://x-access-token:${{ secrets.GH_PAT }}@github.com/blackfenzer/meniscus-backend-repo.git main
+          git subtree push --prefix=backend https://x-access-token:${{ secrets.GG }}@github.com/blackfenzer/meniscus-backend-repo.git main
