@@ -31,14 +31,20 @@ jobs:
       - name: Update Backend Repo
         run: |
           cd backend_repo
-          # Remove existing files except .git
+          # Remove existing files except .git directory
           find . -mindepth 1 -maxdepth 1 -not -name '.git' -exec rm -rf {} +
+          # Copy new backend files
           cp -r ../backend_temp/. .
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
           git add --all
-          git commit -m "Update backend from monorepo"
-          git push
+          # Check if there are changes to commit
+          if ! git diff --cached --quiet; then
+            git commit -m "Update backend from monorepo"
+            git push
+          else
+            echo "No changes to commit."
+          fi
         env:
           GH_TOKEN: ${{ secrets.FINAL }}
 
@@ -64,12 +70,19 @@ jobs:
       - name: Update Frontend Repo
         run: |
           cd frontend_repo
+          # Remove existing files except .git directory
           find . -mindepth 1 -maxdepth 1 -not -name '.git' -exec rm -rf {} +
+          # Copy new frontend files
           cp -r ../frontend_temp/. .
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
           git add --all
-          git commit -m "Update frontend from monorepo"
-          git push
+          # Check if there are changes to commit
+          if ! git diff --cached --quiet; then
+            git commit -m "Update frontend from monorepo"
+            git push
+          else
+            echo "No changes to commit."
+          fi
         env:
           GH_TOKEN: ${{ secrets.FINAL }}
