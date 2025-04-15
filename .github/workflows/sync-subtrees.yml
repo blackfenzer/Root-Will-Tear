@@ -1,35 +1,87 @@
-name: Sync Subtrees to Split Repos
+name: Sync Folders to External Repos
 
 on:
   push:
     branches:
-      - main
-    paths:
-      - "frontend/**"
-      - "backend/**"
+      - main # Adjust if your branch is different
 
 jobs:
-  sync-subtrees:
+  check-changes:
     runs-on: ubuntu-latest
-
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
     steps:
-      - name: Checkout repo
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+
+  sync-backend:
+    needs: check-changes
+    if: ${{ needs.check-changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Monorepo
+        uses: actions/checkout@v4
+
+      - name: Copy Backend Files
+        run: |
+          mkdir -p backend_temp
+          cp -r backend/. backend_temp/
+
+      - name: Checkout Target Backend Repo
         uses: actions/checkout@v4
         with:
+          repository: blackfenzer/meniscus-backend-repo
           token: ${{ secrets.GG }}
-          fetch-depth: 0 # Needed for full git history
+          path: backend_repo
+          fetch-depth: 0
 
-      - name: Setup Git
+      - name: Update Backend Repo
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
+          cd backend_repo
+          # Remove existing files except .git
+          find . -mindepth 1 -maxdepth 1 -not -name '.git' -exec rm -rf {} +
+          cp -r ../backend_temp/. .
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add --all
+          git commit -m "Update backend from monorepo"
+          git push
 
-      - name: Push frontend subtree
-        run: |
-          git config --unset-all http.https://github.com/.extraheader
-          git subtree push --prefix=frontend https://user:${{ secrets.GG }}@github.com/blackfenzer/meniscus-frontend-repo.git main
+  sync-frontend:
+    needs: check-changes
+    if: ${{ needs.check-changes.outputs.frontend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Monorepo
+        uses: actions/checkout@v4
 
-      - name: Push backend subtree
+      - name: Copy Frontend Files
         run: |
-          git config --unset-all http.https://github.com/.extraheader
-          git subtree push --prefix=backend https://user:${{ secrets.GG }}@github.com/blackfenzer/meniscus-backend-repo.git main
+          mkdir -p frontend_temp
+          cp -r frontend/. frontend_temp/
+
+      - name: Checkout Target Frontend Repo
+        uses: actions/checkout@v4
+        with:
+          repository: blackfenzer/meniscus-frontend-repo
+          token: ${{ secrets.GG }}
+          path: frontend_repo
+          fetch-depth: 0
+
+      - name: Update Frontend Repo
+        run: |
+          cd frontend_repo
+          find . -mindepth 1 -maxdepth 1 -not -name '.git' -exec rm -rf {} +
+          cp -r ../frontend_temp/. .
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add --all
+          git commit -m "Update frontend from monorepo"
+          git push
