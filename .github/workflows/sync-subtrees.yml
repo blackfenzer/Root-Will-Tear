@@ -27,9 +27,9 @@ jobs:
       - name: Push frontend subtree
         run: |
           git config --unset-all http.https://github.com/.extraheader
-          git subtree push --prefix=frontend https://x-access-token:${{ secrets.GG }}@github.com/blackfenzer/meniscus-frontend-repo.git main
+          git subtree push --prefix=frontend https://${{ secrets.GG }}@github.com/blackfenzer/meniscus-frontend-repo.git main
 
       - name: Push backend subtree
         run: |
           git config --unset-all http.https://github.com/.extraheader
-          git subtree push --prefix=backend https://x-access-token:${{ secrets.GG }}@github.com/blackfenzer/meniscus-backend-repo.git main
+          git subtree push --prefix=backend https://${{ secrets.GG }}@github.com/blackfenzer/meniscus-backend-repo.git main
