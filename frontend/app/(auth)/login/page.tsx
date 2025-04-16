@@ -32,7 +32,7 @@ export default function LoginPage() {
         {
           username: formData.username,
           password: formData.password
-        }, // Empty body if using query params
+        } // Empty body if using query params
         // {
         //   withCredentials: true
         // }
@@ -40,9 +40,13 @@ export default function LoginPage() {
 
       if (response.status === 200) {
         Cookies.set('session_token', response.data.access_token, {
+          sameSite: 'none',
+          secure: true,
           expires: (1 / 24 / 60) * 30 * 5
         }); // 1 day expiration for example
         Cookies.set('csrf_token', response.data.csrf_token, {
+          sameSite: 'none',
+          secure: true,
           expires: (1 / 24 / 60) * 30 * 5
         });
         toast.success('Login successful');
