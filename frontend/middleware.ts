@@ -1,39 +1,31 @@
-// middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export function middleware(request: NextRequest) {
-  // Proxy API requests to backend
+  // Only proxy API requests to backend
   if (request.nextUrl.pathname.startsWith('/api')) {
-    // Create the URL to rewrite to
+    // Create the backend URL
     const url = new URL(request.nextUrl.pathname, BACKEND_URL);
-
-    // Preserve query parameters if any
     url.search = request.nextUrl.search;
 
-    // Create a new headers object from the request
-    const headers = new Headers(request.headers);
+    // Create a new request headers object
+    const requestHeaders = new Headers(request.headers);
 
-    // Handle cookies explicitly
-    const requestCookies = request.cookies.getAll();
-    if (requestCookies.length > 0) {
-      // Format cookies as a single string with all cookies
-      const cookieString = requestCookies
-        .map((cookie) => `${cookie.name}=${cookie.value}`)
-        .join('; ');
-
-      // Set the cookie header
-      headers.set('cookie', cookieString);
-    }
-
-    // Create the rewrite response with our modified headers
-    return NextResponse.rewrite(url, {
+    // Don't let the middleware modify the cookie header
+    // This will ensure the original cookie header gets forwarded as-is
+    const response = NextResponse.rewrite(url, {
       request: {
-        headers: headers
+        // Forward headers but don't modify them
+        headers: requestHeaders
       }
     });
+
+    // Don't attempt to set or manage cookies in the middleware
+    // Let the browser handle the cookies based on the original headers
+
+    return response;
   }
 
   return NextResponse.next();
