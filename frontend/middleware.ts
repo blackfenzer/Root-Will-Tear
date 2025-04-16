@@ -1,6 +1,13 @@
-export { auth as middleware } from '@/lib/auth';
+// middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-// Don't invoke Middleware on some paths
-export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)']
-};
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+export function middleware(request: NextRequest) {
+  // Proxy API requests to backend
+  if (request.nextUrl.pathname.startsWith('/api')) {
+    return NextResponse.rewrite(new URL(request.nextUrl.pathname, BACKEND_URL));
+  }
+  return NextResponse.next();
+}

@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import { User } from 'types/user';
 import apiClient from '@/lib/axios';
 import { logoutAction } from 'app/actions/auth';
+import axios from 'axios';
 
 interface UserContextType {
   user: User | null;
@@ -26,7 +27,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(true);
 
     try {
-      const response = await apiClient.get<User>('/api/v1/me');
+      const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+      const response = await axios.get('/api/v1/me', { withCredentials: true });
 
       if (response?.data) {
         setUser({
