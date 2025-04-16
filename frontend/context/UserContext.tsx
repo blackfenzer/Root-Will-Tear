@@ -2,16 +2,16 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
-import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast'; // Import toast for notifications
 import { User } from 'types/user';
 import apiClient from '@/lib/axios';
+import { logoutAction } from 'app/actions/auth';
 interface UserContextType {
   user: User | null;
   isLoading: boolean;
   fetchUser: () => Promise<void>;
-  logout: () => Promise<void>;  // Make logout an async function
+  logout: () => Promise<void>; // Make logout an async function
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -23,22 +23,16 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUser = async () => {
     setLoading(true);
-    const sessionToken = Cookies.get('session_token');
-
-    if (!sessionToken) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
 
     try {
-      const response = await apiClient.get<User>('/api/v1/me');
-
+      const response = await apiClient.get<User>('/api/v1/me', {
+        withCredentials: true
+      });
 
       if (response?.data) {
         setUser({
           username: response.data.username,
-          role: response.data.role,
+          role: response.data.role
         });
       }
     } catch (error) {
@@ -53,15 +47,15 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
-      const response = await apiClient.post('/api/v1/logout');
+      // Call the server action to clear cookies
+      const result = await logoutAction();
 
-      if (response.status === 200) {
-        setUser(null); // Reset user state
-        Cookies.remove('access_token');
-        Cookies.remove('csrf_token');
-        Cookies.remove('session_token');
+      if (result.success) {
+        setUser(null);
         toast.success('Signed out successfully');
-        router.push('/'); // Redirect to homepage
+        router.push('/');
+      } else {
+        toast.error(result.error || 'Failed to sign out');
       }
     } catch (error) {
       toast.error('Failed to sign out');
