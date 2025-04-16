@@ -1,17 +1,18 @@
+// context/UserContext.tsx
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import { toast } from 'react-hot-toast'; // Import toast for notifications
+import { toast } from 'react-hot-toast';
 import { User } from 'types/user';
 import apiClient from '@/lib/axios';
 import { logoutAction } from 'app/actions/auth';
+
 interface UserContextType {
   user: User | null;
   isLoading: boolean;
   fetchUser: () => Promise<void>;
-  logout: () => Promise<void>; // Make logout an async function
+  logout: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -25,9 +26,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(true);
 
     try {
-      const response = await apiClient.get<User>('/api/v1/me', {
-        withCredentials: true
-      });
+      const response = await apiClient.get<User>('/api/v1/me');
 
       if (response?.data) {
         setUser({
@@ -37,12 +36,12 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        logout(); // Auto-logout if token is invalid
-      }
+      setUser(null);
+      // Don't auto-logout here to prevent redirect loops
+      // Instead, let individual pages handle unauthorized state
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const logout = async () => {

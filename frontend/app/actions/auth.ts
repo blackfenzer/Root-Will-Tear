@@ -25,7 +25,8 @@ export async function loginAction(
       body: JSON.stringify({
         username: formData.username,
         password: formData.password
-      })
+      }),
+      credentials: 'include'
     });
 
     const data = await response.json();
@@ -77,7 +78,8 @@ export async function logoutAction(): Promise<LogoutResponse> {
     // Call FastAPI logout endpoint if needed
     try {
       await fetch(`${apiUrl}/api/v1/logout`, {
-        method: 'POST'
+        method: 'POST',
+        credentials: 'include'
       });
     } catch (error) {
       // Continue even if backend call fails
