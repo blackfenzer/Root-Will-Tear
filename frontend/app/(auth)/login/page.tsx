@@ -32,10 +32,10 @@ export default function LoginPage() {
         {
           username: formData.username,
           password: formData.password
-        } // Empty body if using query params
-        // {
-        //   withCredentials: true
-        // }
+        }, // Empty body if using query params
+        {
+          withCredentials: true
+        }
       );
 
       if (response.status === 200) {
