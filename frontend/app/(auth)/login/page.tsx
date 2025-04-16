@@ -6,8 +6,6 @@ import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import axios from 'axios';
-import Cookies from 'js-cookie';
 import Footer from '@/components/footer/page';
 import { toast } from 'react-hot-toast';
 import { useUser } from 'context/UserContext';

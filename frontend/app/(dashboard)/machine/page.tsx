@@ -145,7 +145,7 @@ export default function ModelManagement() {
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const response = await axios.get<AllModelResponse[]>('/api/v1/model/', {
+        const response = await axios.get<AllModelResponse[]>('/api/v1/model', {
           withCredentials: true
         });
         setModels(response.data);

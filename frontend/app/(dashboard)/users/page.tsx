@@ -77,7 +77,7 @@ const UsersPage: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get<User[]>('/api/v1/users/', {
+        const response = await axios.get<User[]>('/api/v1/users', {
           withCredentials: true
         });
         setUsers(response.data);

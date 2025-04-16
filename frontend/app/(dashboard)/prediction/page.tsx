@@ -119,7 +119,7 @@ export default function PredictionPage() {
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const response = await axios.get('/api/v1/model/', {
+        const response = await axios.get('/api/v1/model', {
           withCredentials: true
         });
         setModels(response.data);
