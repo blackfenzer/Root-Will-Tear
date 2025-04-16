@@ -39,7 +39,7 @@ export async function loginAction(
         name: 'session_token',
         value: data.access_token,
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         sameSite: 'lax',
         maxAge: 30 * 60, // 30 minutes
         path: '/'
@@ -49,8 +49,8 @@ export async function loginAction(
       cookieStore.set({
         name: 'csrf_token',
         value: data.csrf_token,
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        secure: true,
         sameSite: 'lax',
         maxAge: 30 * 60,
         path: '/'
