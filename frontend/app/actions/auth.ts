@@ -93,6 +93,7 @@ export async function logoutAction(): Promise<LogoutResponse> {
 
     return { success: true };
   } catch (error) {
+    console.error('Error calling logout endpoint:', error);
     return { success: false, error: 'An error occurred during logout' };
   }
 }

@@ -24,21 +24,24 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUser = async () => {
     setLoading(true);
-
     try {
-      const response = await axios.get('/api/v1/me', { withCredentials: true });
+      const response = await axios.get('/api/user', {
+        withCredentials: true // Needed if this were a cross-origin call (but here it's internal)
+      });
 
-      if (response?.data) {
+      const data = response.data.user;
+
+      if (data) {
         setUser({
-          username: response.data.username,
-          role: response.data.role
+          username: data.username,
+          role: data.role
         });
+      } else {
+        setUser(null);
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
       setUser(null);
-      // Don't auto-logout here to prevent redirect loops
-      // Instead, let individual pages handle unauthorized state
     } finally {
       setLoading(false);
     }
@@ -46,7 +49,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
-      // Call the server action to clear cookies
       const result = await logoutAction();
 
       if (result.success) {
