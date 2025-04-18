@@ -17,6 +17,7 @@ services:
       retries: 5
     depends_on:
       - fastapi
+    restart: unless-stopped
 
   fastapi:
     build: ./backend
@@ -31,6 +32,7 @@ services:
       - mynetwork
     depends_on:
       - bentoml-service
+    restart: unless-stopped
 
   bentoml-service:
     build:
@@ -52,11 +54,12 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    restart: unless-stopped
 
   nginx:
     image: nginx:latest
     container_name: nginx
-    restart: always
+    restart: unless-stopped
     depends_on:
       - frontend
       - fastapi
