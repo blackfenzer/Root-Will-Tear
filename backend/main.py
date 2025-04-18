@@ -45,6 +45,7 @@ app.add_middleware(
         "http://fastapi:8000",
         "http://34.226.203.199",
         "http://localhost",
+        "http://34.60.233.166",
     ],  # Allow Next.js frontend
     allow_credentials=True,
     allow_methods=["*"],
