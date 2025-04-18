@@ -53,6 +53,21 @@ services:
       timeout: 10s
       retries: 5
 
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    depends_on:
+      - frontend
+      - fastapi
+      - bentoml-service
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "80:80"
+    networks:
+      - mynetwork
+
 networks:
   mynetwork:
     driver: bridge
