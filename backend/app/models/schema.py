@@ -104,6 +104,11 @@ class CSVFile(Base):
                     if row.get("Post KL grade 2 Y")
                     else None
                 ),
+                MRI_healing_1_Y=(
+                    float(row["MRI healing 1 Y"])
+                    if row.get("MRI healing 1 Y")
+                    else None
+                ),
                 MM_extrusion_pre=(
                     float(row["MM extrusion pre"])
                     if row.get("MM extrusion pre")
@@ -194,6 +199,7 @@ class CSVData(Base):
     Lysholm_2_Y: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     Pre_KL_grade: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     Post_KL_grade_2_Y: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    MRI_healing_1_Y: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     MM_extrusion_pre: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     MM_extrusion_post: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     MM_gap: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
