@@ -88,3 +88,4 @@ networks:
 volumes:
   certbot-etc:
   certbot-var:
+  webroot:
