@@ -79,8 +79,6 @@ services:
       - certbot-etc:/etc/letsencrypt
       - certbot-var:/var/lib/letsencrypt
       - web-root:/var/www/html
-    depends_on:
-      - reverse_proxy
     command: certonly --webroot --webroot-path=/var/www/html --email warisa@cp.eng.chula.ac.th --agree-tos --no-eff-email --staging -d rootpredict.com  -d www.rootpredict.com
 
 networks:
