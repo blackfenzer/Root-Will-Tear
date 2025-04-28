@@ -8,7 +8,8 @@ import { UserProvider } from 'context/UserContext';
 
 export const metadata = {
   title: 'Meniscus Dashboard',
-  description: 'Smart',
+  description:
+    'Our platform helps doctors predict changes in IKDC scores based on patient data.',
   icons: {
     icon: [
       {
