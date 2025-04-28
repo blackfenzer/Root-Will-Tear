@@ -43,6 +43,7 @@ interface AllModelResponse {
   csv_id?: number;
   r2: number;
   description: string;
+  mae: number;
 }
 
 interface AllModelUpdate {
@@ -400,6 +401,7 @@ export default function ModelManagement() {
                           <strong className="block">{model.name}</strong>
                           <div>{`Created: ${model.created_at}`}</div>
                           <div>{`Architecture: ${model.model_architecture}`}</div>
+                          <div>{`MAE: ${model.mae}`}</div>
                           <div>{`RMSE: ${model.final_loss}`}</div>
                           <div>{`R2: ${model.r2}`}</div>
                           <div>{`Description: ${model.description}`}</div>

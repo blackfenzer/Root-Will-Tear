@@ -176,7 +176,7 @@ async def login(
         access_token,
         httponly=True,  # Make cookie HTTP-only
         secure=False,  # Only send over HTTPS
-        samesite="none",  # Protect against CSRF
+        samesite="lax",  # Protect against CSRF
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # Convert to seconds
         domain="rootpredict.com",
     )
@@ -187,7 +187,7 @@ async def login(
         csrf_token,
         httponly=False,
         secure=False,
-        samesite="none",
+        samesite="lax",
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         domain="rootpredict.com",
     )
