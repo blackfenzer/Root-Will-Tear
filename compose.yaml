@@ -57,36 +57,35 @@ services:
     restart: unless-stopped
 
   nginx:
-    image: nginx:latest
+    image: nginx:alpine
     container_name: nginx
-    restart: unless-stopped
-    env_file: .env
-    depends_on:
-      - frontend
-      - fastapi
-      - bentoml-service
-    volumes:
-      # - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/secure/:/etc/nginx/templates/
-      - /etc/localtime:/etc/localtime:ro
-      - ./nginx/certbot/conf:/etc/letsencrypt
-      - ./nginx/certbot/www:/var/www/certbot
-      - ./nginx/99-autoreload.sh:/docker-entrypoint.d/99-autoreload.sh
     ports:
       - "80:80"
       - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./html:/usr/share/nginx/html
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - certbot
+    env_file:
+      - .env
+    command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
     networks:
       - mynetwork
+    restart: unless-stopped
 
   certbot:
     image: certbot/certbot
     container_name: certbot
     volumes:
-      - ./nginx/certbot/conf:/etc/letsencrypt
-      - ./nginx/certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'" # Renew certificates every 12 hours
-
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    env_file:
+      - .env
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 networks:
   mynetwork:
     driver: bridge
-

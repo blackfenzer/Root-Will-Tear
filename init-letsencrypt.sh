@@ -33,7 +33,7 @@ email_arg="--email $email"
 staging_arg=""
 if [ $staging != "0" ]; then staging_arg="--staging"; fi
 
-docker compose run --rm --entrypoint "\
+docker-compose run --rm --entrypoint "\
   certbot certonly --webroot -w /var/www/certbot \
     $staging_arg \
     $email_arg \
