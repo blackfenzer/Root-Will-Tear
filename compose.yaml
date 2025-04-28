@@ -78,7 +78,7 @@ services:
     entrypoint: >
       sh -c "certbot certonly --webroot -w /var/www/certbot
              --email warisa@cpeng.chula.ac.th --agree-tos --no-eff-email
-             -d meniscus.rootpredict.com -d www.meniscus.rootpredict.com"
+             -d rootpredict.com -d www.rootpredict.com"
 
 networks:
   mynetwork:
