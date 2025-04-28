@@ -14,11 +14,15 @@ server {
     listen 80;
     server_name ${APP_DOMAIN};
 
+    root /usr/share/nginx/html;
+
     location / {
         return 301 https://$host$request_uri;
+        allow all;
+        try_files $uri =404;
     }
 
-    location /.well-known/acme-challenge/ {
+    location ^~ /.well-known/acme-challenge/ {
         root /var/www/certbot;
     }
 }
