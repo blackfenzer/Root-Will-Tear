@@ -57,6 +57,10 @@ app.add_middleware(
         "http://rootpredict.com/",
         "https://rootpredict.com",
         "https://rootpredict.com/",
+        "http://rootpredict",
+        "http://rootpredict/",
+        "https://rootpredict",
+        "https://rootpredict/",
     ],  # Allow Next.js frontend
     allow_credentials=True,
     allow_methods=["*"],
