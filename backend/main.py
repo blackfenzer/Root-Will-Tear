@@ -53,6 +53,10 @@ app.add_middleware(
         "http://34.60.233.166:3000/",
         "http://34.60.233.166:3010/",
         "http://34.60.233.166:8000/",
+        "http://rootpredict.com",
+        "http://rootpredict.com/",
+        "https://rootpredict.com",
+        "https://rootpredict.com/",
     ],  # Allow Next.js frontend
     allow_credentials=True,
     allow_methods=["*"],
