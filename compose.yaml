@@ -68,8 +68,17 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
       - "80:80"
+      - "443:443"
     networks:
       - mynetwork
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - cert-data:/etc/letsencrypt
+    entrypoint: >
+      sh -c "certbot certonly --webroot -w /var/www/certbot
+             --email warisa@cpeng.chula.ac.th --agree-tos --no-eff-email
+             -d meniscus.rootpredict.com -d www.meniscus.rootpredict.com"
 
 networks:
   mynetwork:
