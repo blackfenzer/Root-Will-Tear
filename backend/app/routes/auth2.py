@@ -176,9 +176,9 @@ async def login(
         access_token,
         httponly=True,  # Make cookie HTTP-only
         secure=False,  # Only send over HTTPS
-        samesite="lax",  # Protect against CSRF
+        samesite="none",  # Protect against CSRF
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # Convert to seconds
-        domain="rootpredict.com",
+        domain="34.60.233.166",
     )
 
     # Set CSRF token cookie (not HTTP-only so JavaScript can read it)
@@ -187,9 +187,9 @@ async def login(
         csrf_token,
         httponly=False,
         secure=False,
-        samesite="lax",
+        samesite="none",
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        domain="rootpredict.com",
+        domain="34.60.233.166",
     )
 
     return {

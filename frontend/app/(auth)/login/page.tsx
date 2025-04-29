@@ -34,7 +34,7 @@ export default function LoginPage() {
           password: formData.password
         }, // Empty body if using query params
         {
-          withCredentials: false
+          withCredentials: true
         }
       );
 
