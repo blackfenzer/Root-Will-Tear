@@ -15,8 +15,10 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   const pathname = usePathname();
 
   useEffect(() => {
-    fetchUser(); // Always try to get the latest user info
-  }, []);
+    if (!PUBLIC_PATHS.includes(pathname)) {
+      fetchUser(); // Only fetch user if path is protected
+    }
+  }, [pathname]);
 
   useEffect(() => {
     if (isLoading) return;
