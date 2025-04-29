@@ -27,7 +27,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       const response = await apiClient.get<User>('/api/v1/me', {
         withCredentials: true,
       });
-
+  
       if (response?.data) {
         setUser({
           username: response.data.username,
@@ -35,14 +35,17 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         });
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
       if (axios.isAxiosError(error) && error.response?.status === 401) {
-        await logout(); // Auto-logout if token is invalid
+        // No user logged in — not a problem, just reset user
+        setUser(null);
+      } else {
+        console.error('Error fetching user data:', error);
       }
     } finally {
       setLoading(false);
     }
   };
+  
 
   const logout = async () => {
     try {
