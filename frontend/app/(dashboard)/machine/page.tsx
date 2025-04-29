@@ -126,7 +126,7 @@ export default function ModelManagement() {
   // File state for CSV uploads
   const [file, setFile] = useState<File | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
   // State for delete confirmation modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteModelName, setDeleteModelName] = useState<string | null>(null);
@@ -143,6 +143,12 @@ export default function ModelManagement() {
   };
 
   useEffect(() => {
+    if (isLoading) return; // Wait for user data to load
+    if (!user) {
+      toast.error('Please login first');
+      return;
+    }
+  
     const fetchModels = async () => {
       try {
         const response = await apiClient.get<AllModelResponse[]>('/api/v1/model/', {
@@ -153,8 +159,9 @@ export default function ModelManagement() {
         toast.error('Failed to fetch models');
       }
     };
+  
     fetchModels();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, isLoading, user]);
 
   const handleModelAdded = () => {
     setRefreshTrigger((prev) => !prev); // Toggle to trigger re-fetch

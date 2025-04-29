@@ -27,6 +27,7 @@ import apiClient from '@/lib/axios';
 import { Model } from 'types/model';
 import * as RadixTooltip from '@radix-ui/react-tooltip';
 import { motion } from 'framer-motion';
+import { useUser } from 'context/UserContext';
 
 const initialFormData = {
   sex: '',
@@ -115,8 +116,16 @@ export default function PredictionPage() {
   const [featureImportance, setFeatureImportance] = useState<
     { feature: string; importance: number }[]
   >([]);
+  const { user, isLoading: userLoading } = useUser();
 
   useEffect(() => {
+    if (userLoading) return;
+  
+    if (!user) {
+      toast.error('Please login first');
+      return;
+    }
+  
     const fetchModels = async () => {
       try {
         const response = await apiClient.get('/api/v1/model/', {
@@ -128,8 +137,9 @@ export default function PredictionPage() {
         toast.error('Failed to load models');
       }
     };
+  
     fetchModels();
-  }, []);
+  }, [user, userLoading]);
 
   // Memoized change handler
   const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
