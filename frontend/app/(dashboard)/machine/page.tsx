@@ -145,8 +145,9 @@ export default function ModelManagement() {
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const response =
-          await apiClient.get<AllModelResponse[]>('/api/v1/model/');
+        const response = await apiClient.get<AllModelResponse[]>('/api/v1/model/', {
+          withCredentials: true,
+        });
         setModels(response.data);
       } catch (error) {
         toast.error('Failed to fetch models');

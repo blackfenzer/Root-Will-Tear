@@ -119,7 +119,9 @@ export default function PredictionPage() {
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const response = await apiClient.get('/api/v1/model/');
+        const response = await apiClient.get('/api/v1/model/', {
+          withCredentials: true,
+        });
         setModels(response.data);
       } catch (error) {
         console.error('Error fetching models:', error);

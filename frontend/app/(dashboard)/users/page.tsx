@@ -77,7 +77,9 @@ const UsersPage: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await apiClient.get<User[]>('/api/v1/users/');
+        const response = await apiClient.get<User[]>('/api/v1/users/', {
+          withCredentials: true,
+        });
         setUsers(response.data);
       } catch (err) {
         console.error('Error fetching users:', err);
