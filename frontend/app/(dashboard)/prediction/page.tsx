@@ -120,16 +120,16 @@ export default function PredictionPage() {
 
   useEffect(() => {
     if (userLoading) return;
-  
+
     if (!user) {
       toast.error('Please login first');
       return;
     }
-  
+
     const fetchModels = async () => {
       try {
         const response = await apiClient.get('/api/v1/model/', {
-          withCredentials: true,
+          withCredentials: true
         });
         setModels(response.data);
       } catch (error) {
@@ -137,7 +137,7 @@ export default function PredictionPage() {
         toast.error('Failed to load models');
       }
     };
-  
+
     fetchModels();
   }, [user, userLoading]);
 
@@ -375,7 +375,9 @@ export default function PredictionPage() {
                 damping: 25
               }}
             >
-              {result || 'No prediction yet'}
+              {result
+                ? Math.round(Number(result) * 1000) / 1000
+                : 'No prediction yet'}
             </motion.div>
           </motion.div>
 

@@ -110,7 +110,8 @@ export default function ModelManagement() {
     final_loss: 0,
     model_path: '',
     bentoml_tag: '',
-    is_active: true
+    is_active: true,
+    description: ''
   });
 
   // Additional state for CSV training parameters (used only on create)
@@ -148,18 +149,21 @@ export default function ModelManagement() {
       toast.error('Please login first');
       return;
     }
-  
+
     const fetchModels = async () => {
       try {
-        const response = await apiClient.get<AllModelResponse[]>('/api/v1/model/', {
-          withCredentials: true,
-        });
+        const response = await apiClient.get<AllModelResponse[]>(
+          '/api/v1/model/',
+          {
+            withCredentials: true
+          }
+        );
         setModels(response.data);
       } catch (error) {
         toast.error('Failed to fetch models');
       }
     };
-  
+
     fetchModels();
   }, [refreshTrigger, isLoading, user]);
 
@@ -212,7 +216,8 @@ export default function ModelManagement() {
         final_loss: 0,
         model_path: '',
         bentoml_tag: '',
-        is_active: true
+        is_active: true,
+        description: ''
       });
       setTrainingDescription('');
       setTrainingVersion('');
@@ -258,7 +263,8 @@ export default function ModelManagement() {
         final_loss: 0,
         model_path: '',
         bentoml_tag: '',
-        is_active: true
+        is_active: true,
+        description: ''
       });
       setTrainingDescription('');
       setTrainingVersion('');
@@ -292,7 +298,8 @@ export default function ModelManagement() {
         final_loss: 0,
         model_path: '',
         bentoml_tag: '',
-        is_active: true
+        is_active: true,
+        description: ''
       });
       toast.success('Model updated successfully!');
     } catch (error) {
@@ -355,7 +362,8 @@ export default function ModelManagement() {
                   final_loss: 0,
                   model_path: '',
                   bentoml_tag: '',
-                  is_active: true
+                  is_active: true,
+                  description: ''
                 });
                 setTrainingDescription('');
                 setTrainingVersion('');
@@ -406,12 +414,15 @@ export default function ModelManagement() {
                       <CardContent className="p-4 dark:bg-[#141414]">
                         <div className="flex-1">
                           <strong className="block">{model.name}</strong>
-                          <div>{`Created: ${model.created_at}`}</div>
-                          <div>{`Architecture: ${model.model_architecture}`}</div>
-                          <div>{`RMSE: ${model.final_loss}`}</div>
-                          <div>{`R2: ${model.r2}`}</div>
-                          <div>{`Description: ${model.description}`}</div>
+                          <div>
+                            {`Created: ${model.created_at.split('T')[0]}`}{' '}
+                            {model.created_at.split('T')[1].split('.')[0]}
+                          </div>
                           <div>{`BentoML Tag: ${model.bentoml_tag}`}</div>
+                          <div>{`Architecture: ${model.model_architecture}`}</div>
+                          <div>{`RMSE: ${model.final_loss?.toFixed(3)}`}</div>
+                          <div>{`R2: ${model.r2?.toFixed(3)}`}</div>
+                          <div>{`Description: ${model.description}`}</div>
                         </div>
                         <div className="flex flex-col gap-2 mt-2">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -438,7 +449,8 @@ export default function ModelManagement() {
                                         final_loss: model.final_loss || 0,
                                         model_path: model.model_path,
                                         bentoml_tag: model.bentoml_tag,
-                                        is_active: model.is_active
+                                        is_active: model.is_active,
+                                        description: model.description
                                       });
                                     }}
                                   >
@@ -637,26 +649,26 @@ export default function ModelManagement() {
                   placeholder="Model Architecture"
                   className="mb-4"
                 />
-                <Label>Final Loss</Label>
+                <Label>Description</Label>
                 <Input
                   type="number"
-                  value={newModel.final_loss?.toString() || '0'}
+                  value={newModel.description || ''}
                   onChange={(e) =>
                     setNewModel({
                       ...newModel,
-                      final_loss: Number(e.target.value)
+                      description: String(e.target.value)
                     })
                   }
-                  placeholder="Final Loss"
+                  placeholder="Description"
                   className="mb-4"
                 />
-                <Label>Model Path</Label>
+                <Label>Data Path</Label>
                 <Input
                   value={newModel.model_path}
                   onChange={(e) =>
                     setNewModel({ ...newModel, model_path: e.target.value })
                   }
-                  placeholder="Model Path"
+                  placeholder="Data Path"
                   className="mb-4"
                 />
                 <Label>BentoML Tag</Label>
