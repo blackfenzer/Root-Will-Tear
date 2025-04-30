@@ -366,8 +366,7 @@ export default function PredictionPage() {
             {/* Using key to trigger re-render animation when result changes */}
             <motion.div
               key={result || 'no-result'}
-              className="mt-2 p-2 text-base font-semibold bg-white dark:bg-[#101010] rounded-md shadow"
-              initial={{ opacity: 0, scale: 0.9 }}
+              className="mt-2 p-2 text-base font-semibold bg-white dark:bg-[#101010] rounded-md shadow flex justify-between"
               animate={{ opacity: 1, scale: 1 }}
               transition={{
                 type: 'spring',
@@ -375,9 +374,27 @@ export default function PredictionPage() {
                 damping: 25
               }}
             >
-              {result
-                ? Math.round(Number(result) * 1000) / 1000
-                : 'No prediction yet'}
+              <div>
+                {result
+                  ? Math.round(Number(result) * 1000) / 1000
+                  : 'No prediction yet'}{' '}
+              </div>
+              {result && Number(result) - Number(formData['IKDC pre']) > 0 && (
+                <div className="ml-2" style={{ color: '#4318FF' }}>
+                  +{Number(result) - Number(formData['IKDC pre'])}
+                </div>
+              )}
+
+              {result &&
+                Number(result) - Number(formData['IKDC pre']) === 0 && (
+                  <div className="ml-2">0</div>
+                )}
+
+              {result && Number(result) - Number(formData['IKDC pre']) < 0 && (
+                <div className="ml-2" style={{ color: '#EE0707' }}>
+                  {Number(result) - Number(formData['IKDC pre'])}
+                </div>
+              )}
             </motion.div>
           </motion.div>
 
