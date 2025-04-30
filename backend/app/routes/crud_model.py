@@ -9,7 +9,9 @@ from jose import jwt
 from app.routes.auth2 import get_current_user, protected_route
 from loguru import logger
 
-SECRET_KEY = os.getenv("SECRET_KEY") # Store this securely, ideally in environment variables
+SECRET_KEY = os.getenv(
+    "SECRET_KEY"
+)  # Store this securely, ideally in environment variables
 ALGORITHM = os.getenv("ALGORITHM")
 router = APIRouter()
 HOST = os.getenv("BENTOML_HOST")
@@ -24,7 +26,13 @@ def read_models(
     user: UserSchema = Depends(get_current_user),
 ):
     return (
-        db.query(Model).filter(Model.is_active == True).offset(skip).limit(limit).all()
+        db.query(Model).offset(skip).limit(limit).all()
+        if user.role == "admin"
+        else db.query(Model)
+        .filter(Model.is_active == True)
+        .offset(skip)
+        .limit(limit)
+        .all()
     )
 
 

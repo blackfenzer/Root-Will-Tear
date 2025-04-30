@@ -163,6 +163,8 @@ async def login(
     user = db.query(User).filter(User.username == request.username).first()
     if not user or not user.check_password(request.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    if user.is_active == False:
+        raise HTTPException(status_code=400, detail="Inactive user")
 
     # Create access token
     access_token = create_access_token({"sub": user.username, "role": user.role})
