@@ -34,6 +34,7 @@ const UsersPage: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
 
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -43,6 +44,11 @@ const UsersPage: React.FC = () => {
         staggerChildren: 0.1
       }
     }
+  };
+
+  const openDeleteModal = (user: User) => {
+    setUserToDelete(user);
+    setIsDeleteModalOpen(true);
   };
 
   const itemVariants = {
@@ -66,19 +72,19 @@ const UsersPage: React.FC = () => {
   };
 
   // Function to handle deletion after confirmation
-  const confirmDelete = async () => {
-    if (deleteUserId) {
-      await handleDeleteClick(deleteUserId);
-      setIsDeleteModalOpen(false);
-      setDeleteUserId(null);
-    }
-  };
+  // const confirmDelete = async () => {
+  //   if (deleteUserId) {
+  //     await handleDeleteClick(deleteUserId);
+  //     setIsDeleteModalOpen(false);
+  //     setDeleteUserId(null);
+  //   }
+  // };
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await apiClient.get<User[]>('/api/v1/users/', {
-          withCredentials: true,
+          withCredentials: true
         });
         setUsers(response.data);
       } catch (err) {
@@ -101,14 +107,19 @@ const UsersPage: React.FC = () => {
     });
   };
 
-  const handleDeleteClick = async (userId: number) => {
+  const handleDeleteClick = async () => {
+    if (!userToDelete) return;
+
     try {
-      await apiClient.delete(`/api/v1/users/${userId}`);
-      setUsers(users.filter((cust) => cust.id !== userId));
+      await apiClient.delete(`/api/v1/users/${userToDelete.id}`);
+      setUsers(users.filter((user) => user.id !== userToDelete.id));
+      setIsDeleteModalOpen(false); // Close the modal after successful deletion
       toast.success('User deleted successfully');
     } catch (err) {
       console.error('Error deleting user:', err);
       setError('Failed to delete user');
+    } finally {
+      setUserToDelete(null); // Clear the selected user after operation
     }
   };
 
@@ -129,8 +140,15 @@ const UsersPage: React.FC = () => {
         `/api/v1/users/${selectedUser.id}`,
         formData
       );
+
+      // Make sure the response data has the id property
+      const updatedUser = {
+        ...response.data,
+        id: selectedUser.id // Ensure the ID remains consistent
+      };
+
       setUsers((prev) =>
-        prev.map((cust) => (cust.id === selectedUser.id ? response.data : cust))
+        prev.map((user) => (user.id === selectedUser.id ? updatedUser : user))
       );
       setSelectedUser(null);
       toast.success('User updated successfully');
@@ -203,7 +221,9 @@ const UsersPage: React.FC = () => {
                         animate="visible"
                         exit="exit"
                         layout
-                        className="flex flex-col md:flex-row justify-between items-start md:items-center border p-4 rounded"
+                        className={`flex flex-col md:flex-row justify-between items-start md:items-center border p-4 rounded  ${
+                          user.is_active ? 'border-4' : ''
+                        }`}
                         whileHover={{
                           scale: 1.02,
                           boxShadow: '0px 3px 10px rgba(0,0,0,0.1)'
@@ -319,16 +339,19 @@ const UsersPage: React.FC = () => {
                           {/* Delete Modal */}
                           <Dialog
                             open={isDeleteModalOpen}
-                            onOpenChange={setIsDeleteModalOpen}
+                            onOpenChange={(open) => {
+                              setIsDeleteModalOpen(open);
+                              if (!open) setUserToDelete(null); // Clear selection when dialog closes
+                            }}
                           >
                             <DialogTrigger asChild>
                               <motion.button
                                 className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-9 px-3"
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                onClick={() => {
-                                  setDeleteUserId(user.id);
-                                  setIsDeleteModalOpen(true);
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent event bubbling
+                                  openDeleteModal(user);
                                 }}
                               >
                                 Delete
@@ -341,7 +364,7 @@ const UsersPage: React.FC = () => {
                               <p>
                                 This action cannot be undone. Are you sure you
                                 want to delete user{' '}
-                                <strong>{user.username}</strong>?
+                                <strong>{userToDelete?.username}</strong>?
                               </p>
                               <DialogFooter>
                                 <Button
@@ -352,7 +375,7 @@ const UsersPage: React.FC = () => {
                                 </Button>
                                 <Button
                                   variant="destructive"
-                                  onClick={() => handleDeleteClick(user.id)}
+                                  onClick={handleDeleteClick}
                                 >
                                   Delete
                                 </Button>

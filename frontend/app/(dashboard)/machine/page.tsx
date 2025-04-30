@@ -411,9 +411,12 @@ export default function ModelManagement() {
                     whileHover={{ scale: 1.02 }}
                   >
                     <Card>
-                      <CardContent className="p-4 dark:bg-[#141414]">
+                      <CardContent
+                        className={`p-4 dark:bg-[#141414] ${model.is_active ? '' : 'bg-[#F1E9FA] '}`}
+                      >
                         <div className="flex-1">
                           <strong className="block">{model.name}</strong>
+                          <div>{`Status: ${model.is_active ? "Active" : "Inactive"}`}</div>
                           <div>
                             {`Created: ${model.created_at.split('T')[0]}`}{' '}
                             {model.created_at.split('T')[1].split('.')[0]}
@@ -636,7 +639,9 @@ export default function ModelManagement() {
                 animate="visible"
                 exit="exit"
               >
-                <h2 className="text-xl font-bold mb-4">Edit Model</h2>
+                <h2 className="text-xl font-bold mb-4">
+                  Edit Model: {newModel.name}
+                </h2>
                 <Label>Model Architecture</Label>
                 <Input
                   value={newModel.model_architecture}
