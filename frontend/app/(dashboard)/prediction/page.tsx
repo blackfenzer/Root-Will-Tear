@@ -386,13 +386,15 @@ export default function PredictionPage() {
               )}
 
               {result &&
-                Number(result) - Number(formData['IKDC pre']) === 0 && (
-                  <div className="ml-2">0</div>
-                )}
+                Math.round(
+                  (Number(result) - Number(formData['IKDC pre']) * 1000) / 1000
+                ) === 0 && <div className="ml-2">0</div>}
 
               {result && Number(result) - Number(formData['IKDC pre']) < 0 && (
                 <div className="ml-2" style={{ color: '#EE0707' }}>
-                  {Number(result) - Number(formData['IKDC pre'])}
+                  {Math.round(
+                    (Number(result) - Number(formData['IKDC pre'])) * 1000
+                  ) / 1000}
                 </div>
               )}
             </motion.div>

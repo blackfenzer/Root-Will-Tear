@@ -20,7 +20,7 @@ CSRF_COOKIE_NAME = os.getenv("CSRF_COOKIE_NAME")
 
 SECRET_KEY = os.getenv("SECRET_KEY")  # Use environment variable in production
 ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
 # Serializer for signed cookies
 serializer = URLSafeTimedSerializer(SECRET_KEY)
 
