@@ -28,6 +28,7 @@ import { Model } from 'types/model';
 import * as RadixTooltip from '@radix-ui/react-tooltip';
 import { motion } from 'framer-motion';
 import { useUser } from 'context/UserContext';
+import { ArrowRightLeft } from 'lucide-react';
 
 const initialFormData = {
   sex: '',
@@ -108,11 +109,14 @@ InputWithTooltip.displayName = 'InputWithTooltip';
 
 export default function PredictionPage() {
   const [formData, setFormData] = useState(initialFormData);
-
+  const [isMultipleData, setIsMultipleData] = useState(false);
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [csvFileName, setCsvFileName] = useState<string>('');
   const [models, setModels] = useState<Model[]>([]);
   const [selectedModel, setSelectedModel] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [multipleResults, setMultipleResults] = useState<any[]>([]);
   const [featureImportance, setFeatureImportance] = useState<
     { feature: string; importance: number }[]
   >([]);
@@ -150,54 +154,126 @@ export default function PredictionPage() {
     }));
   }, []); // Empty dependency array ensures stable reference
 
+  const handleToggleMode = () => {
+    setIsMultipleData(!isMultipleData);
+    // Reset results when switching modes
+    setResult('');
+    setMultipleResults([]);
+    setFeatureImportance([]);
+  };
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0];
+      setCsvFile(file);
+      setCsvFileName(file.name);
+    }
+  };
+
+  const handleDownloadDefaultCSV = () => {
+    const csv = document.createElement('a');
+    csv.href = '/patients.csv'; // since it's in the public folder
+    csv.download = 'patients.csv'; // this sets the download name
+    csv.click();
+  };
+
   const handlePredict = async () => {
     if (!selectedModel) {
       toast.error('Please select a model');
       return;
     }
 
-    const numericData = Object.fromEntries(
-      Object.entries(formData).map(([key, value]) => [
-        key,
-        value === '' ? 0 : Number(value)
-      ])
-    );
-
     setIsLoading(true);
     try {
-      const response = await apiClient.post(
-        `/api/v1/nn/${selectedModel}`,
-        {
-          model_tag: selectedModel,
-          input_data: numericData
-        },
-        {
-          withCredentials: true
-        }
-      );
-
-      const d = response.data;
-      console.log(d[0]?.feature_importance);
-      console.log(d[0]?.prediction);
-
-      if (d[0]?.feature_importance) {
-        const fi = d[0].feature_importance;
-        const featureImportanceData = Object.entries(fi).map(
-          ([key, value]) => ({
-            feature: key,
-            importance: value as number
-          })
+      if (!isMultipleData) {
+        // Single prediction
+        const numericData = Object.fromEntries(
+          Object.entries(formData).map(([key, value]) => [
+            key,
+            value === '' ? 0 : Number(value)
+          ])
         );
-        setFeatureImportance(featureImportanceData);
-      }
 
-      if (Array.isArray(d) && d[1] === 200) {
-        const predictionValue = d[0]?.prediction;
-        setResult(predictionValue);
+        const response = await apiClient.post(
+          `/api/v1/nn/${selectedModel}`,
+          {
+            model_tag: selectedModel,
+            input_data: numericData
+          },
+          {
+            withCredentials: true
+          }
+        );
+
+        const d = response.data;
+
+        if (d[0]?.feature_importance) {
+          const fi = d[0].feature_importance;
+          const featureImportanceData = Object.entries(fi).map(
+            ([key, value]) => ({
+              feature: key,
+              importance: value as number
+            })
+          );
+          setFeatureImportance(featureImportanceData);
+        }
+
+        if (Array.isArray(d) && d[1] === 200) {
+          const predictionValue = d[0]?.prediction;
+          setResult(predictionValue);
+        } else {
+          throw new Error('Unexpected response structure');
+        }
+
+        toast.success('Prediction successful');
       } else {
-        throw new Error('Unexpected response structure');
+        // Multiple prediction with CSV file
+        if (!csvFile) {
+          toast.error('Please upload a CSV file');
+          setIsLoading(false);
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', csvFile);
+        formData.append('model_tag', selectedModel);
+
+        const response = await apiClient.post(
+          `/api/v1/nn/${selectedModel}/batch`,
+          formData,
+          {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        );
+
+        const data = response.data;
+        if (Array.isArray(data) && data[1] === 200) {
+          setMultipleResults(data[0].predictions || []);
+
+          // If there's feature importance in the first result, use it
+          if (
+            data[0].predictions &&
+            data[0].predictions[0] &&
+            data[0].predictions[0].feature_importance
+          ) {
+            const fi = data[0].predictions[0].feature_importance;
+            const featureImportanceData = Object.entries(fi).map(
+              ([key, value]) => ({
+                feature: key,
+                importance: value as number
+              })
+            );
+            setFeatureImportance(featureImportanceData);
+          }
+        } else {
+          throw new Error('Unexpected response structure');
+        }
+
+        toast.success('Multiple predictions successful');
       }
-      toast.success('Prediction successful');
     } catch (error) {
       console.error('Prediction error:', error);
       toast.error('Prediction failed');
@@ -213,6 +289,17 @@ export default function PredictionPage() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+      {/* Mode toggle button */}
+      <div className="flex justify-center mt-4">
+        <Button
+          onClick={handleToggleMode}
+          className="flex items-center gap-2 bg-[#493DB1] text-[#FFFBFB] hover:bg-[#3d32a0]"
+        >
+          <ArrowRightLeft size={16} />
+          {isMultipleData ? 'Input Single Data' : 'Input Multiple Data'}
+        </Button>
+      </div>
+
       {/* Responsive grid: single column on small screens, two columns on md+ */}
       <div className="p-4 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
         <motion.div
@@ -230,69 +317,127 @@ export default function PredictionPage() {
           >
             Input
           </motion.h2>
-          {/* Responsive grid: stack on mobile and show side-by-side on md+ */}
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 mt-4">
-            <div>
-              <motion.h3
-                className="font-semibold mb-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                Patient Information
-              </motion.h3>
-              <div className="space-y-3">
-                {(
-                  [
-                    'sex',
-                    'age',
-                    'side',
-                    'BW',
-                    'Ht'
-                  ] as (keyof typeof formData)[]
-                ).map((key, index) => (
-                  <InputWithTooltip
-                    key={key}
-                    name={key as keyof typeof formData}
-                    value={formData[key as keyof typeof formData]}
-                    onChange={handleChange}
+
+          {isMultipleData ? (
+            // Multiple data input (CSV upload)
+            <motion.div
+              className="mt-4 space-y-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-6 text-center">
+                <label
+                  htmlFor="csv-upload"
+                  className="flex flex-col items-center justify-center cursor-pointer"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-12 w-12 text-gray-400 mb-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                  <span className="font-medium text-gray-600 dark:text-gray-300">
+                    {csvFileName
+                      ? csvFileName
+                      : 'Click to upload your CSV file'}
+                  </span>
+                  <span className="text-xs text-gray-500 mt-1">
+                    CSV with one data record per line
+                  </span>
+                  <input
+                    id="csv-upload"
+                    name="csv-upload"
+                    type="file"
+                    accept=".csv"
+                    className="hidden"
+                    onChange={handleFileChange}
                   />
-                ))}
+                </label>
+              </div>
+              <div>
+                <Button
+                  onClick={handleDownloadDefaultCSV}
+                  className="flex items-center gap-2 bg-[#493DB1] text-[#FFFBFB] hover:bg-[#3d32a0]"
+                >
+                  Download CSV file
+                </Button>
+              </div>
+            </motion.div>
+          ) : (
+            // Single data input (original form)
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 mt-4">
+              <div>
+                <motion.h3
+                  className="font-semibold mb-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  Patient Information
+                </motion.h3>
+                <div className="space-y-3">
+                  {(
+                    [
+                      'sex',
+                      'age',
+                      'side',
+                      'BW',
+                      'Ht'
+                    ] as (keyof typeof formData)[]
+                  ).map((key) => (
+                    <InputWithTooltip
+                      key={key}
+                      name={key}
+                      value={formData[key]}
+                      onChange={handleChange}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div>
+                <motion.h3
+                  className="font-semibold mb-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  Pre Score
+                </motion.h3>
+                <div className="space-y-3">
+                  {(
+                    [
+                      'IKDC pre',
+                      'Lysholm pre',
+                      'Pre KL grade',
+                      'MM extrusion pre',
+                      'MM gap',
+                      'Degenerative meniscus',
+                      'medial femoral condyle',
+                      'medial tibial condyle',
+                      'lateral femoral condyle'
+                    ] as (keyof typeof formData)[]
+                  ).map((key) => (
+                    <InputWithTooltip
+                      key={key}
+                      name={key}
+                      value={formData[key]}
+                      onChange={handleChange}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
-            <div>
-              <motion.h3
-                className="font-semibold mb-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                Pre Score
-              </motion.h3>
-              <div className="space-y-3">
-                {(
-                  [
-                    'IKDC pre',
-                    'Lysholm pre',
-                    'Pre KL grade',
-                    'MM extrusion pre',
-                    'MM gap',
-                    'Degenerative meniscus',
-                    'medial femoral condyle',
-                    'medial tibial condyle',
-                    'lateral femoral condyle'
-                  ] as (keyof typeof formData)[]
-                ).map((key, index) => (
-                  <InputWithTooltip
-                    key={key}
-                    name={key as keyof typeof formData}
-                    value={formData[key as keyof typeof formData]}
-                    onChange={handleChange}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
+          )}
+
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -354,52 +499,155 @@ export default function PredictionPage() {
               </SelectContent>
             </Select>
           </motion.div>
-          <motion.div
-            className="mt-4 p-4 border rounded-lg bg-gray-100 dark:bg-[#212121]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-          >
-            <div className="font-bold text-lg">
-              Prediction Result (IKDC 2 Year)
-            </div>
-            {/* Using key to trigger re-render animation when result changes */}
+
+          {/* Results Section - Single or Multiple based on mode */}
+          {isMultipleData ? (
+            // Multiple Results Display
             <motion.div
-              key={result || 'no-result'}
-              className="mt-2 p-2 text-base font-semibold bg-white dark:bg-[#101010] rounded-md shadow flex justify-between"
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{
-                type: 'spring',
-                stiffness: 300,
-                damping: 25
-              }}
+              className="mt-4 space-y-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
             >
-              <div>
-                {result
-                  ? Math.round(Number(result) * 1000) / 1000
-                  : 'No prediction yet'}{' '}
+              <div className="font-bold text-lg">
+                Multiple Prediction Results (IKDC 2 Year)
               </div>
-              {result && Number(result) - Number(formData['IKDC pre']) > 0 && (
-                <div className="ml-2" style={{ color: '#4318FF' }}>
-                  +{Number(result) - Number(formData['IKDC pre'])}
+
+              {multipleResults.length > 0 ? (
+                <div className="max-h-80 overflow-y-auto">
+                  <table className="min-w-full bg-white dark:bg-[#101010] border border-gray-300 dark:border-gray-700">
+                    <thead>
+                      <tr className="bg-gray-100 dark:bg-gray-800">
+                        <th className="py-2 px-4 border-b text-left">#</th>
+                        <th className="py-2 px-4 border-b text-left">
+                          Prediction
+                        </th>
+                        <th className="py-2 px-4 border-b text-left">
+                          IKDC Pre
+                        </th>
+                        <th className="py-2 px-4 border-b text-left">Change</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {multipleResults.map((result, index) => (
+                        <tr
+                          key={index}
+                          className="hover:bg-gray-50 dark:hover:bg-gray-900"
+                        >
+                          <td className="py-2 px-4 border-b">{index + 1}</td>
+                          <td className="py-2 px-4 border-b">
+                            {result.prediction
+                              ? Math.round(Number(result.prediction) * 1000) /
+                                1000
+                              : 'N/A'}
+                          </td>
+                          <td className="py-2 px-4 border-b">
+                            {result.input_data && result.input_data['IKDC pre']
+                              ? Math.round(
+                                  Number(result.input_data['IKDC pre']) * 1000
+                                ) / 1000
+                              : 'N/A'}
+                          </td>
+                          <td className="py-2 px-4 border-b">
+                            {result.prediction &&
+                            result.input_data &&
+                            result.input_data['IKDC pre'] ? (
+                              <span
+                                style={{
+                                  color:
+                                    Number(result.prediction) -
+                                      Number(result.input_data['IKDC pre']) >
+                                    0
+                                      ? '#4318FF'
+                                      : Number(result.prediction) -
+                                            Number(
+                                              result.input_data['IKDC pre']
+                                            ) <
+                                          0
+                                        ? '#EE0707'
+                                        : 'inherit'
+                                }}
+                              >
+                                {Number(result.prediction) -
+                                  Number(result.input_data['IKDC pre']) >
+                                  0 && '+'}
+                                {Math.round(
+                                  (Number(result.prediction) -
+                                    Number(result.input_data['IKDC pre'])) *
+                                    1000
+                                ) / 1000}
+                              </span>
+                            ) : (
+                              'N/A'
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
-
-              {result &&
-                Math.round(
-                  (Number(result) - Number(formData['IKDC pre']) * 1000) / 1000
-                ) === 0 && <div className="ml-2">0</div>}
-
-              {result && Number(result) - Number(formData['IKDC pre']) < 0 && (
-                <div className="ml-2" style={{ color: '#EE0707' }}>
-                  {Math.round(
-                    (Number(result) - Number(formData['IKDC pre'])) * 1000
-                  ) / 1000}
+              ) : (
+                <div className="p-4 text-center border rounded-md bg-gray-50 dark:bg-gray-800">
+                  No predictions yet. Upload a CSV file and click Confirm.
                 </div>
               )}
             </motion.div>
-          </motion.div>
+          ) : (
+            // Single Result Display (Original)
+            <motion.div
+              className="mt-4 p-4 border rounded-lg bg-gray-100 dark:bg-[#212121]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              <div className="font-bold text-lg">
+                Prediction Result (IKDC 2 Year)
+              </div>
+              {/* Using key to trigger re-render animation when result changes */}
+              <motion.div
+                key={result || 'no-result'}
+                className="mt-2 p-2 text-base font-semibold bg-white dark:bg-[#101010] rounded-md shadow flex justify-between"
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 300,
+                  damping: 25
+                }}
+              >
+                <div>
+                  {result
+                    ? Math.round(Number(result) * 1000) / 1000
+                    : 'No prediction yet'}{' '}
+                </div>
+                {result &&
+                  Number(result) - Number(formData['IKDC pre']) > 0 && (
+                    <div className="ml-2" style={{ color: '#4318FF' }}>
+                      +
+                      {Math.round(
+                        (Number(result) - Number(formData['IKDC pre'])) * 1000
+                      ) / 1000}
+                    </div>
+                  )}
 
+                {result &&
+                  Math.round(
+                    (Number(result) - Number(formData['IKDC pre']) * 1000) /
+                      1000
+                  ) === 0 && <div className="ml-2">0</div>}
+
+                {result &&
+                  Number(result) - Number(formData['IKDC pre']) < 0 && (
+                    <div className="ml-2" style={{ color: '#EE0707' }}>
+                      {Math.round(
+                        (Number(result) - Number(formData['IKDC pre'])) * 1000
+                      ) / 1000}
+                    </div>
+                  )}
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* Feature Importance Chart - Common for both modes */}
           {featureImportance.length > 0 && (
             <motion.div
               className="mt-8 bg-white p-6 rounded-lg shadow dark:bg-[#101010]"
