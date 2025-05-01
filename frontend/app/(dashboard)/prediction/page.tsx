@@ -120,6 +120,10 @@ export default function PredictionPage() {
   const [featureImportance, setFeatureImportance] = useState<
     { feature: string; importance: number }[]
   >([]);
+  // Add state for tracking selected patient index in multiple results
+  const [selectedPatientIndex, setSelectedPatientIndex] = useState<
+    number | null
+  >(null);
   const { user, isLoading: userLoading } = useUser();
 
   useEffect(() => {
@@ -160,6 +164,7 @@ export default function PredictionPage() {
     setResult('');
     setMultipleResults([]);
     setFeatureImportance([]);
+    setSelectedPatientIndex(null);
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -175,6 +180,21 @@ export default function PredictionPage() {
     csv.href = '/patients.csv'; // since it's in the public folder
     csv.download = 'patients.csv'; // this sets the download name
     csv.click();
+  };
+
+  // Function to select a patient and update the feature importance chart
+  const handlePatientSelect = (index: number) => {
+    setSelectedPatientIndex(index);
+
+    // If we have feature importance data for this patient, update the chart
+    if (multipleResults[index] && multipleResults[index].feature_importance) {
+      const fi = multipleResults[index].feature_importance;
+      const featureImportanceData = Object.entries(fi).map(([key, value]) => ({
+        feature: key,
+        importance: value as number
+      }));
+      setFeatureImportance(featureImportanceData);
+    }
   };
 
   const handlePredict = async () => {
@@ -250,16 +270,19 @@ export default function PredictionPage() {
         );
 
         const data = response.data;
-        if (Array.isArray(data) && data[1] === 200) {
-          setMultipleResults(data[0].predictions || []);
+        if (Array.isArray(data) && data[0][1] === 200) {
+          const scores = data
+            .map((item) => item[0])
+            .filter((obj) => obj?.prediction && obj?.feature_importance);
+          console.log(scores);
+          setMultipleResults(scores || []);
 
-          // If there's feature importance in the first result, use it
-          if (
-            data[0].predictions &&
-            data[0].predictions[0] &&
-            data[0].predictions[0].feature_importance
-          ) {
-            const fi = data[0].predictions[0].feature_importance;
+          // Reset selected patient
+          setSelectedPatientIndex(null);
+
+          // Show the first patient's feature importance by default
+          if (scores.length > 0 && scores[0]?.feature_importance) {
+            const fi = scores[0].feature_importance;
             const featureImportanceData = Object.entries(fi).map(
               ([key, value]) => ({
                 feature: key,
@@ -267,6 +290,7 @@ export default function PredictionPage() {
               })
             );
             setFeatureImportance(featureImportanceData);
+            setSelectedPatientIndex(0); // Select first patient by default
           }
         } else {
           throw new Error('Unexpected response structure');
@@ -532,7 +556,12 @@ export default function PredictionPage() {
                       {multipleResults.map((result, index) => (
                         <tr
                           key={index}
-                          className="hover:bg-gray-50 dark:hover:bg-gray-900"
+                          className={`hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer ${
+                            selectedPatientIndex === index
+                              ? 'bg-blue-50 dark:bg-blue-900'
+                              : ''
+                          }`}
+                          onClick={() => handlePatientSelect(index)}
                         >
                           <td className="py-2 px-4 border-b">{index + 1}</td>
                           <td className="py-2 px-4 border-b">
@@ -542,26 +571,26 @@ export default function PredictionPage() {
                               : 'N/A'}
                           </td>
                           <td className="py-2 px-4 border-b">
-                            {result.input_data && result.input_data['IKDC pre']
+                            {result.input_data && result.input_data['IKDC_pre']
                               ? Math.round(
-                                  Number(result.input_data['IKDC pre']) * 1000
+                                  Number(result.input_data['IKDC_pre']) * 1000
                                 ) / 1000
                               : 'N/A'}
                           </td>
                           <td className="py-2 px-4 border-b">
                             {result.prediction &&
                             result.input_data &&
-                            result.input_data['IKDC pre'] ? (
+                            result.input_data['IKDC_pre'] ? (
                               <span
                                 style={{
                                   color:
                                     Number(result.prediction) -
-                                      Number(result.input_data['IKDC pre']) >
+                                      Number(result.input_data['IKDC_pre']) >
                                     0
                                       ? '#4318FF'
                                       : Number(result.prediction) -
                                             Number(
-                                              result.input_data['IKDC pre']
+                                              result.input_data['IKDC_pre']
                                             ) <
                                           0
                                         ? '#EE0707'
@@ -569,11 +598,11 @@ export default function PredictionPage() {
                                 }}
                               >
                                 {Number(result.prediction) -
-                                  Number(result.input_data['IKDC pre']) >
+                                  Number(result.input_data['IKDC_pre']) >
                                   0 && '+'}
                                 {Math.round(
                                   (Number(result.prediction) -
-                                    Number(result.input_data['IKDC pre'])) *
+                                    Number(result.input_data['IKDC_pre'])) *
                                     1000
                                 ) / 1000}
                               </span>
@@ -589,6 +618,15 @@ export default function PredictionPage() {
               ) : (
                 <div className="p-4 text-center border rounded-md bg-gray-50 dark:bg-gray-800">
                   No predictions yet. Upload a CSV file and click Confirm.
+                </div>
+              )}
+
+              {/* Indicate which patient's data is being shown */}
+              {multipleResults.length > 0 && selectedPatientIndex !== null && (
+                <div className="mt-2 text-sm text-blue-600 dark:text-blue-400">
+                  Showing feature importance for Patient #
+                  {selectedPatientIndex + 1}. Click on any row to view that
+                  patient's data.
                 </div>
               )}
             </motion.div>
@@ -667,6 +705,7 @@ export default function PredictionPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.4, type: 'spring' }}
+                key={`feature-chart-${selectedPatientIndex !== null ? selectedPatientIndex : 'single'}`}
               >
                 <ResponsiveContainer width="100%" height={400}>
                   <BarChart
@@ -703,7 +742,10 @@ export default function PredictionPage() {
                       animationDuration={1500}
                     >
                       {featureImportance.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill="#8884d8" />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={entry.importance > 0 ? '#4318FF' : '#EE0707'}
+                        />
                       ))}
                     </Bar>
                   </BarChart>

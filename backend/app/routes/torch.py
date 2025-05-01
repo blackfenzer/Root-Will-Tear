@@ -200,6 +200,7 @@ async def multiple_predict(
         for item in prediction_inputs:
             input_data = item
             result = await call_prediction_service(model, input_data, secure_token)
+            result[0]["input_data"] = input_data
             results.append(result)
         logger.info(results)
         return results
