@@ -22,7 +22,8 @@ import uuid
 import traceback
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-
+from app.database.session import SessionLocal
+from app.models.schema import User
 load_dotenv()
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
@@ -30,7 +31,37 @@ LOG_PATH = os.getenv("LOG_PATH", "logs/app.log")
 # Create tables (only for development)
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(debug=True)
+from contextlib import asynccontextmanager
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    
+    admin_username = os.environ.get("ADMIN_USERNAME")
+    admin_password = os.environ.get("ADMIN_PASSWORD")
+
+    db = SessionLocal()
+    try:
+        # Check if the admin already exists by username
+        admin = db.query(User).filter(User.username == admin_username).first()
+        if admin is None:
+            # Create new admin user and set role to 'admin'
+            admin = User(username=admin_username, role="admin")
+            admin.set_password(admin_password)
+            db.add(admin)
+            db.commit()
+            print("Admin created successfully.")
+        else:
+            print("Admin user already exists.")
+    except Exception as e:
+        db.rollback()
+        print("Error seeding admin:", e)
+    finally:
+        db.close()
+
+    yield
+    
+
+
+app = FastAPI(lifespan=lifespan)
 
 # CORS Middleware
 app.add_middleware(

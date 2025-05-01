@@ -4,3 +4,4 @@ temp_cleaned_model.csv
 bentoml/
 model_artifacts/
 app/resource/
+dockerfile

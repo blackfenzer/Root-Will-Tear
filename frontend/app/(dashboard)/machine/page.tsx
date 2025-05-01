@@ -232,6 +232,18 @@ export default function ModelManagement() {
     }
   };
 
+  const formatDateTime = (dateString: string | undefined): string => {
+    if (!dateString) return 'Date unavailable';
+
+    try {
+      const date: string = dateString.split('T')[0] || '';
+      const time: string = dateString.split('T')[1]?.split('.')[0] || '';
+      return `Created: ${date} ${time}`.trim();
+    } catch (error) {
+      return 'Invalid date format';
+    }
+  };
+
   // Create new model via training endpoint using XG boost method
   const handleCreateXGBoost = async () => {
     if (!file) {
@@ -416,11 +428,8 @@ export default function ModelManagement() {
                       >
                         <div className="flex-1">
                           <strong className="block">{model.name}</strong>
-                          <div>{`Status: ${model.is_active ? "Active" : "Inactive"}`}</div>
-                          <div>
-                            {`Created: ${model.created_at.split('T')[0]}`}{' '}
-                            {model.created_at.split('T')[1].split('.')[0]}
-                          </div>
+                          <div>{`Status: ${model.is_active ? 'Active' : 'Inactive'}`}</div>
+                          <div>{formatDateTime(model.created_at)}</div>
                           <div>{`BentoML Tag: ${model.bentoml_tag}`}</div>
                           <div>{`Architecture: ${model.model_architecture}`}</div>
                           <div>{`RMSE: ${model.final_loss?.toFixed(3)}`}</div>

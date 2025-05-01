@@ -4,14 +4,14 @@ services:
     container_name: next
     hostname: next
     ports:
-      - "3010:3000"
+      - "3099:3000"
     environment:
       - NEXT_PUBLIC_BACKEND_URL=http://fastapi:8000
       - NEXTAUTH_URL=http://localhost:3010
     networks:
       - mynetwork
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3010"]
+      test: ["CMD", "curl", "-f", "http://localhost:3099"]
       interval: 30s
       timeout: 10s
       retries: 5
