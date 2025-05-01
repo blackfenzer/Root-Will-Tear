@@ -392,7 +392,7 @@ export default function PredictionPage() {
                   onClick={handleDownloadDefaultCSV}
                   className="flex items-center gap-2 bg-[#493DB1] text-[#FFFBFB] hover:bg-[#3d32a0]"
                 >
-                  Download CSV file
+                  Download headers CSV file
                 </Button>
               </div>
             </motion.div>
