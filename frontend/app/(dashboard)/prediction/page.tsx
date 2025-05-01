@@ -47,6 +47,23 @@ const initialFormData = {
   'lateral femoral condyle': ''
 };
 
+const DefaultFormData = {
+  sex: '1',
+  age: '57',
+  side: '2',
+  BW: '70',
+  Ht: '159',
+  'IKDC pre': '34',
+  'Lysholm pre': '51',
+  'Pre KL grade': '2',
+  'MM extrusion pre': '4',
+  'MM gap': '5',
+  'Degenerative meniscus': '1',
+  'medial femoral condyle': '3',
+  'medial tibial condyle': '2',
+  'lateral femoral condyle': '0.57'
+};
+
 const tooltipDescriptions = {
   sex: 'Patient sex: Enter 0 for male, 1 for female',
   age: 'Patient age in years',
@@ -210,7 +227,9 @@ export default function PredictionPage() {
         const numericData = Object.fromEntries(
           Object.entries(formData).map(([key, value]) => [
             key,
-            value === '' ? 0 : Number(value)
+            formData[key as keyof typeof formData] === ''
+              ? Number(DefaultFormData[key as keyof typeof DefaultFormData])
+              : Number(formData[key as keyof typeof formData])
           ])
         );
 
@@ -667,11 +686,10 @@ export default function PredictionPage() {
                     </div>
                   )}
 
-                {result &&
-                  Math.round(
-                    (Number(result) - Number(formData['IKDC pre']) * 1000) /
-                      1000
-                  ) === 0 && <div className="ml-2">0</div>}
+                {/* {result &&
+                Math.round(
+                  (Number(result) - Number(formData['IKDC pre']) * 1000) / 1000
+                ) === 0 && <div className="ml-2">0</div>} */}
 
                 {result &&
                   Number(result) - Number(formData['IKDC pre']) < 0 && (
