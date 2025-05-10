@@ -341,25 +341,6 @@ export default function PredictionPage() {
           transition={{ duration: 0.5 }}
           whileHover={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.1)' }}
         >
-<<<<<<< Updated upstream
-          <div className="flex items-center justify-between mt-4">
-            <motion.h2
-              className="text-xl font-bold"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              Input
-            </motion.h2>
-
-            <Button
-              onClick={handleToggleMode}
-              className="flex items-center gap-2 bg-[#493DB1] text-[#FFFBFB] hover:bg-[#3d32a0]"
-            >
-              <ArrowRightLeft size={16} />
-              {isMultipleData ? 'Input Single Data' : 'Input Multiple Data'}
-            </Button>
-=======
           <div className="flex flex-row justify-between">
             <div className="flex justify-center mt-4">
               <motion.h2
@@ -381,7 +362,6 @@ export default function PredictionPage() {
                 {isMultipleData ? 'Input Single Data' : 'Input Multiple Data'}
               </Button>
             </div>
->>>>>>> Stashed changes
           </div>
 
           {isMultipleData ? (
