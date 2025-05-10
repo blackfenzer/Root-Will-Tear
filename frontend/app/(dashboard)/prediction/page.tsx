@@ -332,17 +332,6 @@ export default function PredictionPage() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Mode toggle button */}
-      <div className="flex justify-center mt-4">
-        <Button
-          onClick={handleToggleMode}
-          className="flex items-center gap-2 bg-[#493DB1] text-[#FFFBFB] hover:bg-[#3d32a0]"
-        >
-          <ArrowRightLeft size={16} />
-          {isMultipleData ? 'Input Single Data' : 'Input Multiple Data'}
-        </Button>
-      </div>
-
       {/* Responsive grid: single column on small screens, two columns on md+ */}
       <div className="p-4 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
         <motion.div
@@ -352,14 +341,24 @@ export default function PredictionPage() {
           transition={{ duration: 0.5 }}
           whileHover={{ boxShadow: '0px 10px 15px rgba(0, 0, 0, 0.1)' }}
         >
-          <motion.h2
-            className="text-xl font-bold"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            Input
-          </motion.h2>
+          <div className="flex items-center justify-between mt-4">
+            <motion.h2
+              className="text-xl font-bold"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              Input
+            </motion.h2>
+
+            <Button
+              onClick={handleToggleMode}
+              className="flex items-center gap-2 bg-[#493DB1] text-[#FFFBFB] hover:bg-[#3d32a0]"
+            >
+              <ArrowRightLeft size={16} />
+              {isMultipleData ? 'Input Single Data' : 'Input Multiple Data'}
+            </Button>
+          </div>
 
           {isMultipleData ? (
             // Multiple data input (CSV upload)
@@ -409,7 +408,8 @@ export default function PredictionPage() {
               <div>
                 <Button
                   onClick={handleDownloadDefaultCSV}
-                  className="flex items-center gap-2 bg-[#493DB1] text-[#FFFBFB] hover:bg-[#3d32a0]"
+                  title="Download a CSV template used for adding patient data. Each line represents one patient, and values are separated by commas (,). Make sure to follow the provided header format."
+                  className="flex items-center gap-2 bg-[#FFFBFB] text-[#493DB1] hover:bg-[#FFFBFB]"
                 >
                   Download headers CSV file
                 </Button>
@@ -642,7 +642,7 @@ export default function PredictionPage() {
 
               {/* Indicate which patient's data is being shown */}
               {multipleResults.length > 0 && selectedPatientIndex !== null && (
-                <div className="mt-2 text-sm text-blue-600 dark:text-blue-400">
+                <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                   Showing feature importance for Patient #
                   {selectedPatientIndex + 1}. Click on any row to view that
                   patient's data.
